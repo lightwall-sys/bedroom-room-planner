@@ -1,0 +1,122 @@
+BEDROOM ROOM PLANNER v2.03 — INTERNAL PATCH NOTES
+==================================================
+
+SOURCE LINEAGE
+--------------
+Direct successor to Bedroom Room Planner v2.02.
+The v2.01 startup recovery and the v2.02 single-authority render scheduler and directional cutaway logic are retained.
+
+1. REPEATING HORIZONTAL WALL PATTERN
+------------------------------------
+Observed behaviour:
+- Large wall surfaces still showed dense, repeating horizontal and stepped bands after the v2.02 bias adjustment.
+- The regular pattern and block boundaries were characteristic of shadow-map self-shadow acne rather than a wall image texture.
+
+Root cause:
+- Visible wall meshes were still both receiving and writing the overhead spotlight shadow map.
+- Large double-sided wall boxes could therefore self-shadow at shallow angles even with positive bias and normalBias.
+
+Fix:
+- Visible wall meshes no longer cast shadows.
+- Walls still receive legitimate shadows from furniture, trim and fixed objects.
+- Non-wall room geometry continues to cast shadows normally.
+- Wall materials remain completely texture-free, fully rough and dithered.
+
+Relevant construction:
+- model batch mesh.castShadow assignment
+- baseMaterial() wall branch
+
+2. WHITE-WALL AND LIGHTING BALANCE
+----------------------------------
+- Changed the non-accent wall base from warm grey-white to a neutral near-white.
+- Preserved exactly one selected accent wall; setAccentWall() continues to repaint every other wall with C.wall_white.
+- Added a HemisphereLight for soft sky/ground fill.
+- Increased neutral ambient fill and made it time-of-day aware.
+- Reduced the muddy/dim character of white walls without flattening object shadows.
+- Raised and stabilised exposure slightly across the day cycle.
+
+Relevant settings:
+- C.wall_white
+- wall emissive intensity
+- ambient and hemisphere lights
+- applyTimeOfDay()
+- renderer.toneMappingExposure
+
+3. ROTATION MODEL
+-----------------
+New default behaviour:
+- Q / E and the main on-screen controls rotate floor furniture or the bed by 90 degrees.
+- Shift+Q / Shift+E and the fine on-screen controls rotate by 5 degrees.
+- R snaps the active floor object, placement ghost or bed to the nearest 90 degrees.
+- Exact angle fields remain available for direct numeric entry.
+
+Movement refinement:
+- Arrow keys continue to nudge by the active grid size.
+- Shift+arrow keys always nudge by 1 cm, allowing a large wardrobe to be moved gradually until a fine-angle rotation becomes valid.
+
+Relevant constants/functions:
+- ROTATE_SNAP_DEGREES
+- ROTATE_FINE_DEGREES
+- rotationStep()
+- nearestRightAngle()
+- rotateBed()
+- rotatePending()
+- rotateSelectedItem()
+- snapActiveRotation()
+- document keydown handler
+
+4. CONTROL DISCOVERABILITY
+--------------------------
+- Replaced the icon-only Help affordance with a labelled Controls button on desktop.
+- Added a persistent Essential controls card on larger screens.
+- Rebuilt the Controls panel to document every active mouse and keyboard command.
+- Contextual placement and selection banners now show 90-degree controls, 5-degree fine controls and their keyboard shortcuts.
+- Selected objects expose Delete directly in the banner and Add furniture panel.
+- Help text explicitly states that right-drag pans the camera and never deletes an item.
+
+Relevant UI:
+- #hotkeysToggle
+- .control-guide
+- #hotkeysPanel
+- renderModeBanner()
+- refreshMoveBanner()
+- selected-object control groups
+
+5. DELETION AND STALE SHADOWS
+-----------------------------
+Root cause:
+- removeSelectedItem() removed the scene object but did not mark the manually managed shadow map dirty.
+- With renderer.shadowMap.autoUpdate disabled, the removed object's previous shadow could remain visible until another shadow-refreshing action occurred.
+
+Fix:
+- Clear the selection helper before removal.
+- Remove item meshes from the raycast registry.
+- Dispose the removed proxy geometry/materials.
+- Mark the shadow map dirty, request a multi-frame shadow render and commit history immediately.
+- Added visible Delete controls and Delete/Backspace documentation.
+
+Relevant function:
+- removeSelectedItem()
+
+6. DIMPLEX QUANTUM PROXY
+------------------------
+- Rebuilt the heater as a recognisable late-2010s Dimplex Quantum planning proxy.
+- Kept the dimension-matched 106.9 x 73.0 x 18.5 cm casing allowance.
+- Replaced the generic ribbed block with a mostly plain white front, restrained vertical pressed channels, low repeated outlet slots, white end cheeks, side vents, two cylindrical feet and a closed top-right control lid.
+- The exact wattage variant remains intentionally unidentified because the measured casing dimensions are shared by more than one Quantum variant.
+
+Relevant construction:
+- Storage_Heater_Dimplex_Quantum_Late_2010s
+- qPart() and qBuckets batching section
+
+7. PUBLIC README AND RELEASE VERSIONING
+---------------------------------------
+- Added a prominent hyperlink to the live GitHub Pages planner.
+- Documented the complete mouse and keyboard control model.
+- Documented the approximate nature of planning proxies.
+- Updated all runtime and visible version markers to v2.03.
+- Updated every app-shell query string to ?v=2.03.
+- Updated service-worker registration to service-worker.js?v=2.03.
+- Updated cache name to bedroom-room-planner-v2-03.
+- Activation continues to delete all older bedroom-room-planner-* caches.
+- Updated PWA start URL and tour storage key for v2.03.

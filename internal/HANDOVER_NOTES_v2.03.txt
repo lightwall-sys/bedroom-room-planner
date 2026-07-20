@@ -1,0 +1,145 @@
+BEDROOM ROOM PLANNER v2.03 — INTERNAL HANDOVER NOTES
+=====================================================
+
+RELEASE STATUS
+--------------
+- Complete static replacement repository.
+- Intended deployment: GitHub Pages from main / (root).
+- No build step, package installation or server-side component is required.
+- index.html, manifest.webmanifest and service-worker.js must remain at repository root.
+
+VERSION MARKERS
+---------------
+- Public/runtime version: 2.03
+- Service-worker cache: bedroom-room-planner-v2-03
+- Asset query string: ?v=2.03
+- Service-worker registration: ./service-worker.js?v=2.03
+- Diagnostics object: window.BedroomPlannerDiagnostics.version === "2.03"
+- Tour key: bedroomPlannerV203Tour
+
+RENDER-LIFECYCLE RULE
+---------------------
+Keep scheduleRenderFrame() as the only authority that calls requestAnimationFrame(renderFrame).
+
+Do not:
+- add a second continuous render loop for OrbitControls
+- call requestAnimationFrame(renderFrame) directly from the controls change handler
+- clear renderQueued early enough for controls.update() to create a competing callback
+
+The camera performance repair from v2.02 is confirmed as accepted and must not be regressed.
+
+WALL RENDERING RULE
+-------------------
+Visible wall meshes intentionally do not cast shadows. This is the root v2.03 fix for the repeating horizontal/stepped shadow-map pattern.
+
+Maintain:
+- wall castShadow = false
+- wall receiveShadow = true
+- no generated or image wall texture
+- wall roughness = 1
+- material dithering
+- neutral C.wall_white for every wall except the selected accent wall
+
+Do not re-enable wall shadow casting without testing every wall at shallow angles with the overhead light enabled. Positive bias alone did not remove the pattern in v2.02.
+
+ACCENT-WALL RULE
+----------------
+Exactly one selected wall may use the chosen Dulux accent approximation. setAccentWall() must continue to iterate through every wall material and reset all non-selected walls to C.wall_white.
+
+ROTATION AND MOVEMENT RULE
+--------------------------
+Primary rotation is deliberately orthogonal:
+- Q / E: 90 degrees
+- main visible buttons: 90 degrees
+- Shift+Q / Shift+E: 5 degrees
+- visible fine buttons: 5 degrees
+- R: nearest 90 degrees
+
+Primary movement:
+- arrows: active grid size
+- Shift+arrows: 1 cm
+
+Do not tie rotation steps back to the position grid-snap toggle. Position and angle refinement are separate user intentions in v2.03.
+
+DELETION RULE
+-------------
+Every deletion path must finish with a shadow refresh because renderer.shadowMap.autoUpdate is false.
+
+removeSelectedItem() currently:
+- hides the selection helper
+- removes registered item meshes
+- removes and disposes the group
+- marks shadowDirty
+- sets renderer.shadowMap.needsUpdate
+- calls requestRender(true, 3)
+- queues history
+
+Right-click is reserved for OrbitControls panning. Do not bind it to deletion.
+
+CONTROL-DISCOVERABILITY RULE
+----------------------------
+The planner has three layers of control visibility:
+1. labelled Controls button in the taskbar
+2. persistent Essential controls card on wider screens
+3. complete Controls panel plus contextual placement/selection actions
+
+When adding a shortcut, update all relevant layers and the public README. Do not introduce hidden keyboard-only functionality for core editing actions.
+
+DIMPLEX QUANTUM PROXY
+---------------------
+The heater is an approximate late-2010s Dimplex Quantum visual proxy using a dimension-matched casing allowance.
+
+Preserve the recognisable design cues:
+- plain white main front
+- subtle vertical pressed channels
+- low fan outlet grille with repeated dark slots
+- white end cheeks and small side vents
+- two rounded feet
+- closed top-right control lid
+
+Do not claim that a precise wattage/model variant has been identified. The source record explains the casing match and uncertainty.
+
+RESPONSIVE BEHAVIOUR
+--------------------
+- The Essential controls card is visible on larger screens and hidden below 860 px.
+- The taskbar Controls label remains visible down to 580 px, then collapses to its icon.
+- Contextual action buttons wrap below 1120 px and become a two-column action grid on narrow screens.
+- Drawers and existing mobile taskbar behaviour are retained.
+
+VALIDATION PERFORMED BEFORE DELIVERY
+------------------------------------
+Passed:
+- JavaScript syntax: app.js, pwa.js and service-worker.js
+- manifest.webmanifest JSON parse
+- HTML duplicate-ID and JavaScript DOM-reference audit
+- CSS structural brace audit
+- all index and service-worker local assets exist
+- every runtime asset returned HTTP 200 from a local static server
+- no stale v2.02 runtime version references
+- wall batch castShadow remains false
+- exactly one accent-wall repaint rule remains intact
+- 90-degree and 5-degree button/keyboard source checks
+- Shift+arrow 1 cm fine-nudge source check
+- deletion requests a multi-frame shadow refresh
+- all dummy-item CSV files parse successfully
+- README includes the live planner hyperlink and no private machine context
+- ZIP integrity and SHA-256
+
+Environment limitation:
+- The available automated Chromium runtime did not expose a usable WebGL context, so final rendered-lighting, wall-surface and interaction QA must be completed on the deployed GitHub Pages site using the checklist below.
+
+MANUAL POST-DEPLOYMENT QA
+-------------------------
+1. Confirm v2.03 in the header and Controls > App status.
+2. Orbit continuously for at least 20 seconds and confirm v2.02's smooth performance remains.
+3. Inspect every wall at dawn, midday and sunset for repeating horizontal or stepped lines.
+4. Confirm the selected accent wall is coloured and every other wall appears white.
+5. Test Auto cutaway, Walls up, Walls down and Plan view.
+6. Place a PAX or BRIMNES wardrobe and use Q/E for 90-degree rotation.
+7. Use Shift+Q/E for 5-degree rotation and Shift+arrows for 1 cm clearance adjustment.
+8. Press R and confirm the active floor object snaps to the nearest 90 degrees when valid.
+9. Delete an item from the contextual banner, panel and Delete key; confirm its shadow vanishes immediately.
+10. Right-drag over an object and confirm it pans rather than deleting.
+11. Inspect the updated Quantum heater from front and oblique angles.
+12. Open README.md and test the live-planner link.
+13. Reload and confirm the v2.03 cache has replaced v2.02.

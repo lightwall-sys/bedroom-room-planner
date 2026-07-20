@@ -2,7 +2,7 @@ const MODEL = window.BEDROOM_MODEL;
 const C = {
   dusted_fondant: "#c3b3b8",
   raspberry_diva: "#b27782",
-  wall_white: "#f1efeb",
+  wall_white: "#fffdfa",
   trim_white: "#fffdfa",
   floor_placeholder: "#c2bbb3",
   glass: "#a9d5e8",
@@ -62,7 +62,7 @@ renderer.shadowMap.type = THREE.PCFShadowMap;
 renderer.shadowMap.autoUpdate = false;
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.NoToneMapping;
-renderer.toneMappingExposure = 0.96;
+renderer.toneMappingExposure = 1.0;
 renderer.autoClear = true;
 stage.appendChild(renderer.domElement);
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -153,7 +153,7 @@ function baseMaterial(i) {
     p.metalness = 0;
     p.side = THREE.DoubleSide;
     p.emissive = new THREE.Color(C.wall_white);
-    p.emissiveIntensity = 0.022;
+    p.emissiveIntensity = 0.035;
     p.dithering = true;
   }
   if (i.category === "trim" || i.category === "fixture") p.roughness = 0.76;
@@ -270,7 +270,7 @@ for (const [key, batch] of modelBatches) {
   mesh.name = `Batch_${batch.isBed ? "Bed" : "Room"}_${key.replace(/[^a-z0-9]+/gi, "_")}`;
   mesh.userData.category = batch.source.category;
   mesh.userData.wallSection = batch.section;
-  mesh.castShadow = batch.source.category !== "glass";
+  mesh.castShadow = !["glass", "wall"].includes(batch.source.category);
   mesh.receiveShadow = batch.source.category !== "glass";
   if (batch.isBed) {
     bedGroup.add(mesh);
@@ -284,9 +284,11 @@ for (const [key, batch] of modelBatches) {
   }
 }
 
-// Replace the generic storage-heater block with a dimension-matched Dimplex Quantum casing.
-// The measured room object is approximately 105.4 x 73.7 x 19.1 cm; the nearest official
-// Quantum casing is 106.9 x 73.0 x 18.5 cm (used by QM125RF and QM150RF).
+// Replace the generic storage-heater block with a recognisable late-2010s Dimplex Quantum casing.
+// The measured room object is approximately 105.4 x 73.7 x 19.1 cm. The planning proxy
+// uses the 106.9 x 73.0 x 18.5 cm casing shared by the nearest Quantum variants, while
+// matching the generation's white bowed-edge case, subtle vertical front channels,
+// low-level fan grille, cylindrical feet and closed top-right control lid.
 for (const m of [...roomGroup.children]) {
   if (/^(Storage_Heater$|Heater_Grille_|Heater_Switch_)/.test(m.name)) {
     roomGroup.remove(m);
@@ -294,27 +296,26 @@ for (const m of [...roomGroup.children]) {
   }
 }
 const quantumHeater = new THREE.Group();
-quantumHeater.name = "Storage_Heater_Quantum_1069";
+quantumHeater.name = "Storage_Heater_Dimplex_Quantum_Late_2010s";
 const qWhite = new THREE.MeshStandardMaterial({
-  color: 0xf0efeb,
-  roughness: 0.7,
-  metalness: 0.02,
+  color: 0xf8f8f5,
+  roughness: 0.76,
+  metalness: 0.01,
+});
+const qSoftWhite = new THREE.MeshStandardMaterial({
+  color: 0xe9e9e5,
+  roughness: 0.8,
+  metalness: 0.01,
 });
 const qEdge = new THREE.MeshStandardMaterial({
-  color: 0xd6d5d1,
-  roughness: 0.72,
+  color: 0xd2d3d1,
+  roughness: 0.7,
+  metalness: 0.08,
 });
 const qDark = new THREE.MeshStandardMaterial({
-  color: 0x4f5254,
-  roughness: 0.48,
-  metalness: 0.05,
-});
-const qScreen = new THREE.MeshStandardMaterial({
-  color: 0x202426,
-  roughness: 0.18,
-  metalness: 0.18,
-  emissive: 0x15202a,
-  emissiveIntensity: 0.16,
+  color: 0x303336,
+  roughness: 0.58,
+  metalness: 0.08,
 });
 const qBuckets = new Map();
 function qPart(name, geometry, material, x, y, z) {
@@ -333,109 +334,128 @@ const qBaseY = 7.62,
   qW = 106.9,
   qH = 73,
   qD = 18.5;
+
+// Main insulated case and gently stepped front shell.
 qPart(
   "Main_Case",
-  new THREE.BoxGeometry(qD - 1.4, 58, qW - 1.8),
+  new THREE.BoxGeometry(qD - 1.3, 61.5, qW - 2.0),
   qWhite,
-  qD / 2 - 0.7,
-  qBaseY + 38.5,
-  qCentreZ,
-);
-qPart(
-  "Top_Cap",
-  new THREE.BoxGeometry(qD - 1.0, 7.2, qW),
-  qEdge,
-  qD / 2 - 0.5,
-  qBaseY + 69.4,
+  qD / 2 - 0.65,
+  qBaseY + 39.0,
   qCentreZ,
 );
 qPart(
   "Front_Panel",
-  new THREE.BoxGeometry(1.2, 48.5, qW - 5.2),
+  new THREE.BoxGeometry(1.05, 50.5, qW - 5.2),
   qWhite,
-  qD - 0.1,
-  qBaseY + 42.2,
+  qD - 0.05,
+  qBaseY + 45.0,
   qCentreZ,
 );
 qPart(
-  "Lower_Grille_Back",
-  new THREE.BoxGeometry(1.0, 12.8, qW - 3.5),
-  qDark,
-  qD - 0.05,
-  qBaseY + 13.8,
+  "Top_Cap",
+  new THREE.BoxGeometry(qD - 0.8, 4.8, qW - 1.0),
+  qWhite,
+  qD / 2 - 0.4,
+  qBaseY + 70.4,
   qCentreZ,
 );
-for (let i = 0; i < 6; i++)
+qPart(
+  "Lower_Case_Rail",
+  new THREE.BoxGeometry(qD - 0.6, 5.0, qW - 1.4),
+  qEdge,
+  qD / 2 - 0.3,
+  qBaseY + 8.9,
+  qCentreZ,
+);
+
+// Quantum's front is mostly plain, with restrained vertical pressed channels.
+for (let i = 0; i < 6; i++) {
+  const z = qCentreZ - 41.5 + i * 16.6;
   qPart(
-    "Lower_Grille_" + i,
-    new THREE.BoxGeometry(0.75, 0.72, qW - 5.1),
-    qEdge,
-    qD + 0.48,
-    qBaseY + 9.2 + i * 2.05,
-    qCentreZ,
-  );
-for (let i = 0; i < 8; i++) {
-  const z = qCentreZ - qW * 0.39 + i * ((qW * 0.78) / 7);
-  qPart(
-    "Front_Rib_" + i,
-    new THREE.BoxGeometry(0.55, 39, 0.72),
-    qEdge,
-    qD + 0.48,
-    qBaseY + 43,
+    `Front_Channel_${i}`,
+    new THREE.BoxGeometry(0.22, 39.5, 0.8),
+    qSoftWhite,
+    qD + 0.49,
+    qBaseY + 45.0,
     z,
   );
 }
+
+// Low fan-assisted outlet: a silver-toned rail containing repeated dark slots.
 qPart(
-  "Left_End",
-  new THREE.BoxGeometry(qD, 61, 2.1),
+  "Outlet_Frame",
+  new THREE.BoxGeometry(1.0, 8.6, qW - 4.2),
   qEdge,
-  qD / 2,
-  qBaseY + 38.5,
-  qCentreZ - qW / 2 + 1.05,
+  qD + 0.1,
+  qBaseY + 12.4,
+  qCentreZ,
 );
-qPart(
-  "Right_End",
-  new THREE.BoxGeometry(qD, 61, 2.1),
-  qEdge,
-  qD / 2,
-  qBaseY + 38.5,
-  qCentreZ + qW / 2 - 1.05,
-);
-for (const side of [-1, 1])
+for (let row = 0; row < 2; row++) {
+  for (let i = 0; i < 12; i++) {
+    const z = qCentreZ - 46.0 + i * (92.0 / 11);
+    qPart(
+      `Outlet_Slot_${row}_${i}`,
+      new THREE.BoxGeometry(0.48, 1.55, 5.6),
+      qDark,
+      qD + 0.66,
+      qBaseY + 10.4 + row * 3.6,
+      z,
+    );
+  }
+}
+
+// White end cheeks and small side ventilation details.
+for (const side of [-1, 1]) {
+  const z = qCentreZ + side * (qW / 2 - 1.1);
+  qPart(
+    `End_Cheek_${side}`,
+    new THREE.BoxGeometry(qD, 62.0, 2.2),
+    qSoftWhite,
+    qD / 2,
+    qBaseY + 39.0,
+    z,
+  );
   for (let i = 0; i < 3; i++)
     qPart(
-      "Side_Vent_" + side + "_" + i,
-      new THREE.BoxGeometry(4.1, 0.8, 0.6),
+      `Side_Vent_${side}_${i}`,
+      new THREE.BoxGeometry(4.4, 0.85, 0.55),
       qDark,
-      qD - 2.7,
-      qBaseY + 57 + i * 2.15,
-      qCentreZ + side * (qW / 2 + 0.02),
+      qD - 3.0,
+      qBaseY + 57.4 + i * 2.2,
+      qCentreZ + side * (qW / 2 + 0.03),
     );
-for (const z of [qCentreZ - 35, qCentreZ + 35])
+}
+
+// The normal room view sees the closed hinged control lid rather than an exposed screen.
+qPart(
+  "Control_Lid",
+  new THREE.BoxGeometry(qD - 3.4, 1.25, 24.0),
+  qWhite,
+  qD / 2 - 0.3,
+  qBaseY + qH - 0.1,
+  qCentreZ + 37.5,
+);
+qPart(
+  "Control_Lid_Seam",
+  new THREE.BoxGeometry(qD - 4.2, 0.18, 22.0),
+  qEdge,
+  qD / 2 - 0.3,
+  qBaseY + qH + 0.54,
+  qCentreZ + 37.5,
+);
+
+// Two rounded floor feet, matching the visible Quantum installation style.
+for (const z of [qCentreZ - 34.5, qCentreZ + 34.5])
   qPart(
     "Foot",
-    new THREE.BoxGeometry(11, 7.2, 8.2),
-    qEdge,
-    7.2,
+    new THREE.CylinderGeometry(4.1, 4.1, 7.2, 20),
+    qSoftWhite,
+    6.5,
     qBaseY + 3.6,
     z,
   );
-qPart(
-  "Control_Pod",
-  new THREE.BoxGeometry(12.5, 2.8, 18),
-  qEdge,
-  8.8,
-  qBaseY + 71.1,
-  qCentreZ + 40.1,
-);
-qPart(
-  "Control_Display",
-  new THREE.BoxGeometry(5.8, 0.8, 8.8),
-  qScreen,
-  9.8,
-  qBaseY + 72.65,
-  qCentreZ + 40.1,
-);
+
 for (const [material, parts] of qBuckets) {
   const positions = [];
   const normals = [];
@@ -467,7 +487,7 @@ for (const [material, parts] of qBuckets) {
   geometry.setIndex(indices);
   geometry.computeBoundingSphere();
   const mesh = new THREE.Mesh(geometry, material);
-  mesh.name = "Storage_Heater_Quantum_Batch";
+  mesh.name = "Storage_Heater_Dimplex_Quantum_Batch";
   mesh.userData.wallSection = 6;
   mesh.castShadow = true;
   mesh.receiveShadow = true;
@@ -523,8 +543,9 @@ outside.position.set(-7, (D.window.bottom + D.window.top) / 2, windowZ);
 scene.add(outside);
 portalMeshes.w6.push(outside);
 
-const ambient = new THREE.AmbientLight(0xfffbf5, 0.06);
-scene.add(ambient);
+const ambient = new THREE.AmbientLight(0xfffdf9, 0.11);
+const hemisphere = new THREE.HemisphereLight(0xf6fbff, 0xc9beb0, 0.32);
+scene.add(ambient, hemisphere);
 const daylight = new THREE.SpotLight(
   0xe7f2ff,
   1.1,
@@ -726,7 +747,30 @@ function applyTimeOfDay(hours, announce = false) {
       hours,
     ),
   );
-  ambient.intensity = 0.025 + 0.065 * dayFactor;
+  ambient.intensity = 0.07 + 0.08 * dayFactor;
+  hemisphere.color.copy(
+    colourAt(
+      [
+        [6, "#d8dcea"],
+        [12.5, "#f7fbff"],
+        [19.5, "#d8c8cf"],
+        [22, "#78839a"],
+      ],
+      hours,
+    ),
+  );
+  hemisphere.groundColor.copy(
+    colourAt(
+      [
+        [6, "#a68f84"],
+        [12.5, "#d7cfc4"],
+        [19.5, "#9b7f78"],
+        [22, "#4b4e5c"],
+      ],
+      hours,
+    ),
+  );
+  hemisphere.intensity = 0.2 + 0.18 * dayFactor;
   const bg = colourAt(
     [
       [6, "#b7aaa5"],
@@ -740,7 +784,7 @@ function applyTimeOfDay(hours, announce = false) {
   );
   scene.background.copy(bg);
   scene.fog.color.copy(bg);
-  renderer.toneMappingExposure = 0.84 + 0.12 * dayFactor;
+  renderer.toneMappingExposure = 0.94 + 0.08 * dayFactor;
   repaintSky(hours);
   const formatted = formatTime(hours),
     label = timeLabel(hours);
@@ -1079,6 +1123,14 @@ function normalizeAngle(d) {
   d = ((d % 360) + 360) % 360;
   return d > 180 ? d - 360 : d;
 }
+const ROTATE_SNAP_DEGREES = 90;
+const ROTATE_FINE_DEGREES = 5;
+function rotationStep(fine = false) {
+  return fine ? ROTATE_FINE_DEGREES : ROTATE_SNAP_DEGREES;
+}
+function nearestRightAngle(angle) {
+  return normalizeAngle(Math.round(angle / ROTATE_SNAP_DEGREES) * ROTATE_SNAP_DEGREES);
+}
 function applyBedTransform() {
   bedGroup.position.set(state.x, 0, state.z);
   bedGroup.rotation.y = THREE.MathUtils.degToRad(state.rotation);
@@ -1088,6 +1140,7 @@ function applyBedTransform() {
   document
     .querySelectorAll("[data-place-wall]")
     .forEach((b) => b.classList.remove("active"));
+  requestRender(true, 2);
 }
 function placeBed(w, announce = true) {
   if (w === 1) {
@@ -1277,10 +1330,10 @@ function nudge(dx, dz) {
   state.z = snapValue(state.z + dz);
   applyBedTransform();
 }
-function rotateBed(dir) {
-  const step = state.snap ? 15 : 1;
-  state.rotation = normalizeAngle(state.rotation + dir * step);
+function rotateBed(dir, fine = false) {
+  state.rotation = normalizeAngle(state.rotation + dir * rotationStep(fine));
   applyBedTransform();
+  requestRender(true, 2);
 }
 
 const raycaster = new THREE.Raycaster(),
@@ -1305,17 +1358,21 @@ function renderModeBanner({
   text = "",
   rotate = false,
   orientation = false,
+  deletable = false,
 } = {}) {
   const banner = document.getElementById("modeBanner");
   banner.classList.toggle("show", show);
   banner.classList.toggle("placing", placing);
   banner.classList.toggle("invalid", invalid);
-  banner.classList.toggle("has-actions", rotate || orientation);
-  const actions = orientation
-    ? '<span class="mode-banner-actions"><button type="button" data-quick-rotate="1">↔ Switch orientation</button></span>'
-    : rotate
-      ? '<span class="mode-banner-actions"><button type="button" data-quick-rotate="-1">↺ Rotate left</button><button type="button" data-quick-rotate="1">Rotate right ↻</button></span>'
-      : "";
+  banner.classList.toggle("has-actions", rotate || orientation || deletable);
+  let actionButtons = "";
+  if (orientation)
+    actionButtons += '<button type="button" data-quick-rotate="1" data-fine="false">↔ Switch orientation</button>';
+  if (rotate)
+    actionButtons += '<button type="button" data-quick-rotate="-1" data-fine="false">↺ 90° <kbd>Q</kbd></button><button type="button" data-quick-rotate="1" data-fine="false">90° <kbd>E</kbd> ↻</button><button type="button" class="fine" data-quick-rotate="-1" data-fine="true">↺ 5° <kbd>Shift Q</kbd></button><button type="button" class="fine" data-quick-rotate="1" data-fine="true">5° <kbd>Shift E</kbd> ↻</button>';
+  if (deletable)
+    actionButtons += '<button type="button" class="delete" data-quick-delete="true">Delete <kbd>Del</kbd></button>';
+  const actions = actionButtons ? `<span class="mode-banner-actions">${actionButtons}</span>` : "";
   banner.innerHTML = `<i></i><span class="mode-banner-copy"><b>${title}</b> ${text}</span>${actions}`;
   banner.querySelectorAll("[data-quick-rotate]").forEach((button) => {
     button.addEventListener("pointerdown", (event) => event.stopPropagation());
@@ -1323,9 +1380,15 @@ function renderModeBanner({
       event.preventDefault();
       event.stopPropagation();
       const direction = Number(button.dataset.quickRotate) || 1;
-      if (pendingPlacement) rotatePending(direction);
-      else rotateSelectedItem(direction);
+      const fine = button.dataset.fine === "true";
+      if (pendingPlacement) rotatePending(direction, fine);
+      else rotateSelectedItem(direction, fine);
     });
+  });
+  banner.querySelector("[data-quick-delete]")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    removeSelectedItem();
   });
 }
 function refreshMoveBanner() {
@@ -1337,20 +1400,21 @@ function refreshMoveBanner() {
     renderModeBanner({
       show: true,
       title: "Move objects is on.",
-      text: "Click furniture to select it, then drag. Press Esc or P when finished.",
+      text: "Click furniture to select it, then drag. P or Esc finishes.",
     });
     return;
   }
   const wallMounted = selectedPlacedItem.mount === "wall";
   const detail = wallMounted
-    ? "Use Switch orientation here, or adjust its exact wall position in Add furniture."
-    : `Drag to move. Current angle ${normalizeAngle(selectedPlacedItem.rotation).toFixed(0)}°.`;
+    ? "Switch orientation or delete here. Right-drag only pans the camera."
+    : `Drag or use arrows to move. Angle ${normalizeAngle(selectedPlacedItem.rotation).toFixed(0)}°. 90° is the default; Shift gives 5°.`;
   renderModeBanner({
     show: true,
     title: `${selectedPlacedItem.name} selected.`,
     text: detail,
     rotate: !wallMounted,
     orientation: wallMounted,
+    deletable: true,
   });
 }
 function setPlacementMode(enabled, announce = true) {
@@ -1742,7 +1806,7 @@ function updateSelectedPanel() {
   if (!selectedPlacedItem) {
     card.querySelector("h4").textContent = "Nothing selected";
     card.querySelector("p").textContent =
-      "Enable Placement mode, then click a dummy item. The bed keeps its own controls in the Room panel.";
+      "Enable Move objects, then click furniture. Rotation and deletion are also shown in the selection banner. The bed keeps its own controls in Room settings.";
     floor.classList.add("hidden");
     wall.classList.add("hidden");
     document.getElementById("itemStatus").className = "status-line good";
@@ -1855,7 +1919,7 @@ function setGhostAppearance(valid, message) {
   pendingPlacement.outline.material.color.setHex(colour);
   pendingPlacement.outline.setFromObject(pendingPlacement.group);
   ghostMessage(
-    valid ? "Rotate here if needed, then click to place · Esc cancels" : message,
+    valid ? "Rotate 90° with Q/E, fine-tune 5° with Shift, then click to place · Esc cancels" : message,
     !valid,
   );
   requestRender(false, 1);
@@ -1996,7 +2060,7 @@ function updatePendingPlacement(e) {
   const v = itemValidation(item);
   setGhostAppearance(!v.hard, v.message);
 }
-function rotatePending(dir = 1) {
+function rotatePending(dir = 1, fine = false) {
   if (!pendingPlacement) return;
   const item = pendingPlacement.item;
   if (item.mount === "wall") {
@@ -2004,7 +2068,7 @@ function rotatePending(dir = 1) {
       item.orientation === "portrait" ? "landscape" : "portrait";
     if (pendingPlacement.hasPosition) wallPosition(item);
   } else {
-    item.rotation = normalizeAngle(item.rotation + dir * (state.snap ? 15 : 1));
+    item.rotation = normalizeAngle(item.rotation + dir * rotationStep(fine));
     item.group.rotation.y = THREE.MathUtils.degToRad(item.rotation);
   }
   if (pendingPlacement.hasPosition) {
@@ -2096,16 +2160,22 @@ function addItem(key) {
 function removeSelectedItem() {
   if (!selectedPlacedItem) return;
   const item = selectedPlacedItem;
+  updateSelectionHighlight(null);
   scene.remove(item.group);
   item.group.traverse((m) => {
     const i = itemMeshes.indexOf(m);
     if (i >= 0) itemMeshes.splice(i, 1);
   });
   placedItems.splice(placedItems.indexOf(item), 1);
+  disposeGroup(item.group);
   selectedPlacedItem = null;
   updateSelectedPanel();
   updatePlacedList();
   refreshMoveBanner();
+  shadowDirty = true;
+  renderer.shadowMap.needsUpdate = true;
+  requestRender(true, 3);
+  queueHistory();
   toast(`${item.name} removed`);
 }
 function moveSelectedItem(dx, dz) {
@@ -2126,10 +2196,11 @@ function moveSelectedItem(dx, dz) {
   item.group.position.set(item.x, 0, item.z);
   updateSelectedPanel();
   updatePlacedList();
+  requestRender(true, 2);
 }
-function rotateSelectedItem(dir) {
+function rotateSelectedItem(dir, fine = false) {
   if (!selectedPlacedItem) {
-    rotateBed(dir);
+    rotateBed(dir, fine);
     return;
   }
   const item = selectedPlacedItem;
@@ -2145,7 +2216,7 @@ function rotateSelectedItem(dir) {
     }
   } else {
     const old = item.rotation;
-    item.rotation = normalizeAngle(item.rotation + dir * (state.snap ? 15 : 1));
+    item.rotation = normalizeAngle(item.rotation + dir * rotationStep(fine));
     if (validateFloorItem(item).hard) {
       item.rotation = old;
       toast("Rotation would create an impossible overlap");
@@ -2155,14 +2226,46 @@ function rotateSelectedItem(dir) {
   updateSelectedPanel();
   updatePlacedList();
   refreshMoveBanner();
+  requestRender(true, 2);
+}
+function snapActiveRotation() {
+  if (pendingPlacement) {
+    const item = pendingPlacement.item;
+    if (item.mount !== "floor") return;
+    item.rotation = nearestRightAngle(item.rotation);
+    item.group.rotation.y = THREE.MathUtils.degToRad(item.rotation);
+    if (pendingPlacement.hasPosition) {
+      const v = itemValidation(item);
+      setGhostAppearance(!v.hard, v.message);
+    } else requestRender(false, 1);
+    return;
+  }
+  if (placementMode && selectedPlacedItem) {
+    if (selectedPlacedItem.mount !== "floor") return;
+    const old = selectedPlacedItem.rotation;
+    selectedPlacedItem.rotation = nearestRightAngle(old);
+    if (validateFloorItem(selectedPlacedItem).hard) {
+      selectedPlacedItem.rotation = old;
+      toast("The nearest 90° angle does not fit here");
+    }
+    selectedPlacedItem.group.rotation.y = THREE.MathUtils.degToRad(selectedPlacedItem.rotation);
+    updateSelectedPanel();
+    updatePlacedList();
+    refreshMoveBanner();
+    requestRender(true, 2);
+    return;
+  }
+  state.rotation = nearestRightAngle(state.rotation);
+  applyBedTransform();
+  requestRender(true, 2);
 }
 function activeNudge(dx, dz) {
   if (placementMode && selectedPlacedItem) moveSelectedItem(dx, dz);
   else nudge(dx, dz);
 }
-function activeRotate(dir) {
-  if (placementMode && selectedPlacedItem) rotateSelectedItem(dir);
-  else rotateBed(dir);
+function activeRotate(dir, fine = false) {
+  if (placementMode && selectedPlacedItem) rotateSelectedItem(dir, fine);
+  else rotateBed(dir, fine);
 }
 
 function placementPointerDown(e) {
@@ -2364,7 +2467,10 @@ document.querySelectorAll("[data-nudge]").forEach(
 );
 document
   .querySelectorAll("[data-rotate]")
-  .forEach((b) => (b.onclick = () => activeRotate(Number(b.dataset.rotate))));
+  .forEach((b) =>
+    (b.onclick = () =>
+      activeRotate(Number(b.dataset.rotate), b.dataset.rotateFine === "true")),
+  );
 document
   .querySelectorAll("[data-wall-mode]")
   .forEach((b) => (b.onclick = () => setWallMode(b.dataset.wallMode)));
@@ -2468,6 +2574,7 @@ for (const [id, key] of [
     );
     updateSelectedPanel();
     updatePlacedList();
+    requestRender(true, 2);
   });
 document.getElementById("itemWall").onchange = (e) => {
   if (!selectedPlacedItem || selectedPlacedItem.mount !== "wall") return;
@@ -2483,6 +2590,7 @@ document.getElementById("itemWall").onchange = (e) => {
   }
   updateSelectedPanel();
   updatePlacedList();
+  requestRender(true, 2);
 };
 document.getElementById("itemHeight").onchange = (e) => {
   if (!selectedPlacedItem || selectedPlacedItem.mount !== "wall") return;
@@ -2495,6 +2603,7 @@ document.getElementById("itemHeight").onchange = (e) => {
     toast("That height is not valid");
   }
   updateSelectedPanel();
+  requestRender(true, 2);
 };
 document.getElementById("itemOffset").onchange = (e) => {
   if (!selectedPlacedItem || selectedPlacedItem.mount !== "wall") return;
@@ -2508,6 +2617,7 @@ document.getElementById("itemOffset").onchange = (e) => {
   }
   updateSelectedPanel();
   updatePlacedList();
+  requestRender(true, 2);
 };
 document.getElementById("itemOrientation").onchange = (e) => {
   if (!selectedPlacedItem || selectedPlacedItem.mount !== "wall") return;
@@ -2520,11 +2630,16 @@ document.getElementById("itemOrientation").onchange = (e) => {
     toast("That orientation does not fit");
   }
   updateSelectedPanel();
+  requestRender(true, 2);
 };
 document.getElementById("itemRotateLeft").onclick = () =>
-  rotateSelectedItem(-1);
+  rotateSelectedItem(-1, false);
 document.getElementById("itemRotateRight").onclick = () =>
-  rotateSelectedItem(1);
+  rotateSelectedItem(1, false);
+document.getElementById("itemRotateFineLeft").onclick = () =>
+  rotateSelectedItem(-1, true);
+document.getElementById("itemRotateFineRight").onclick = () =>
+  rotateSelectedItem(1, true);
 document.getElementById("itemDelete").onclick = removeSelectedItem;
 document.getElementById("itemDeleteWall").onclick = removeSelectedItem;
 
@@ -2532,7 +2647,7 @@ document.addEventListener("keydown", (e) => {
   const tag = document.activeElement?.tagName;
   if (["INPUT", "SELECT", "TEXTAREA"].includes(tag)) return;
   let handled = true,
-    step = state.snap ? state.gridSize : 1;
+    step = e.shiftKey ? 1 : state.snap ? state.gridSize : 1;
   switch (e.key) {
     case "ArrowLeft":
       pendingPlacement ? nudgePending(-step, 0) : activeNudge(-step, 0);
@@ -2548,16 +2663,15 @@ document.addEventListener("keydown", (e) => {
       break;
     case "q":
     case "Q":
-      pendingPlacement ? rotatePending(-1) : activeRotate(-1);
+      pendingPlacement ? rotatePending(-1, e.shiftKey) : activeRotate(-1, e.shiftKey);
       break;
     case "e":
     case "E":
-      pendingPlacement ? rotatePending(1) : activeRotate(1);
+      pendingPlacement ? rotatePending(1, e.shiftKey) : activeRotate(1, e.shiftKey);
       break;
     case "r":
     case "R":
-      if (pendingPlacement) rotatePending(1);
-      else handled = false;
+      snapActiveRotation();
       break;
     case "Enter":
       if (pendingPlacement) confirmPendingPlacement();
@@ -2983,7 +3097,7 @@ const coachSteps = [
   },
   {
     title: "Add planning furniture",
-    copy: "Choose an item, move its luminous green ghost to the exact position and click to place. Red means the position is blocked.",
+    copy: "Choose an item, move its luminous green ghost, rotate in 90° steps or 5° fine steps and click to place. Red means the position is blocked.",
     target: "libraryToggle",
   },
 ];
@@ -3010,7 +3124,7 @@ function closeCoach() {
     .querySelectorAll(".coach-highlight")
     .forEach((e) => e.classList.remove("coach-highlight"));
   try {
-    localStorage.setItem("bedroomPlannerV202Tour", "done");
+    localStorage.setItem("bedroomPlannerV203Tour", "done");
   } catch (e) {}
 }
 document.getElementById("coachNext").onclick = () =>
@@ -3050,14 +3164,14 @@ setTimeout(() => {
   commitHistory();
   let done = false;
   try {
-    done = localStorage.getItem("bedroomPlannerV202Tour") === "done";
+    done = localStorage.getItem("bedroomPlannerV203Tour") === "done";
   } catch (e) {}
   if (!done) setTimeout(() => showCoach(0), 380);
 }, 350);
 
 
 window.BedroomPlannerDiagnostics = {
-  version: "2.02",
+  version: "2.03",
   renderer,
   scene,
   camera,

@@ -1736,3 +1736,205 @@ body.is-interacting .glass{box-shadow:0 8px 24px rgba(56,47,43,.11) !important}
     margin-left: 18px;
   }
 }
+
+/* v2.03 clean-wall lighting, visible controls and deliberate fine editing */
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 18px;
+  padding: 1px 6px;
+  border: 1px solid rgba(74, 65, 60, 0.2);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #514842;
+  font-family: inherit;
+  font-size: 8.5px;
+  font-weight: 850;
+  line-height: 1;
+  white-space: nowrap;
+}
+.controls-button {
+  background: #f8f5f1;
+}
+.control-guide {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 4;
+  width: min(310px, calc(100vw - 36px));
+  padding: 12px 13px;
+  border-radius: 16px;
+  pointer-events: none;
+}
+.control-guide-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.control-guide-title b {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.control-guide-title span {
+  color: var(--muted);
+  font-size: 8.5px;
+  text-align: right;
+}
+.control-guide-grid {
+  display: grid;
+  grid-template-columns: minmax(78px, 0.8fr) minmax(0, 1.35fr);
+  gap: 5px 8px;
+  align-items: center;
+  font-size: 9px;
+}
+.control-guide-grid > span {
+  color: var(--muted);
+  font-weight: 700;
+}
+.control-guide-grid kbd {
+  justify-self: stretch;
+  min-height: 20px;
+  background: rgba(242, 238, 233, 0.82);
+}
+.control-guide-orientation {
+  margin-top: 9px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 8.5px;
+  line-height: 1.4;
+}
+.control-guide-orientation b {
+  color: #4c433e;
+  margin-right: 4px;
+}
+.rotation-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.rotation-grid .btn,
+.item-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.btn.fine {
+  background: rgba(245, 241, 236, 0.82);
+  color: #655c56;
+  border-style: dashed;
+}
+.btn.fine:hover,
+.btn.fine:focus-visible {
+  background: #fff;
+  color: #3e3733;
+  border-style: solid;
+}
+.rotation-help {
+  margin: 7px 1px 0;
+}
+.rotation-control-stack {
+  display: grid;
+  gap: 6px;
+  margin-top: 9px;
+}
+.item-actions {
+  margin-top: 0 !important;
+}
+.item-actions.fine-actions .btn {
+  font-size: 9px;
+}
+.delete-object-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  margin-top: 9px;
+}
+.delete-object-button kbd,
+.mode-banner-actions .delete kbd {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.14);
+  color: inherit;
+}
+.mode-banner.has-actions {
+  max-width: min(1040px, calc(100vw - 36px));
+  border-radius: 19px;
+}
+.mode-banner-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.mode-banner-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.mode-banner-actions button.fine {
+  border-style: dashed;
+  opacity: 0.9;
+}
+.mode-banner-actions button.delete {
+  background: rgba(180, 61, 51, 0.45);
+  border-color: rgba(255, 193, 185, 0.42);
+}
+.mode-banner-actions kbd {
+  min-height: 16px;
+  padding: 1px 5px;
+  border-color: rgba(255, 255, 255, 0.26);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 7.5px;
+}
+@media (max-width: 1120px) {
+  .control-guide {
+    width: 275px;
+  }
+  .control-guide-grid {
+    grid-template-columns: 72px 1fr;
+  }
+  .mode-banner.has-actions {
+    max-width: min(820px, calc(100vw - 28px));
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .mode-banner.has-actions .mode-banner-copy {
+    flex: 1 1 calc(100% - 28px);
+  }
+  .mode-banner-actions {
+    width: 100%;
+    margin-left: 18px;
+    justify-content: flex-start;
+  }
+}
+@media (max-width: 860px) {
+  .control-guide {
+    display: none;
+  }
+  .taskbar .controls-button span.label {
+    display: inline;
+  }
+}
+@media (max-width: 580px) {
+  .taskbar .controls-button span.label {
+    display: none;
+  }
+  .mode-banner-actions {
+    margin-left: 0;
+  }
+  .mode-banner-actions button {
+    flex: 1 1 calc(50% - 4px);
+    justify-content: center;
+  }
+}
+.item-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
