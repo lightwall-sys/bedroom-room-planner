@@ -1,0 +1,38 @@
+BEDROOM ROOM PLANNER v2.01 — INTERNAL HANDOVER NOTES
+=====================================================
+
+SOURCE LINEAGE
+--------------
+- Direct replacement for Bedroom Room Planner v2.00.
+- v2.00 is consumed and must not be reissued.
+- Next delivered code pass must be v2.02.
+
+IMPORTANT IMPLEMENTATION DETAILS
+--------------------------------
+- Three.js remains revision 124.
+- qPart() in assets/js/app.js is the compatibility boundary for legacy Geometry used by the heater proxy.
+- Do not remove the Geometry-to-BufferGeometry normalisation unless Three.js is upgraded and the complete planner is revalidated.
+- The startup guard is intentionally inline in index.html so it can report failures in external startup files.
+- app.js must call BedroomPlannerStartup.markReady() only after the initial room state, controls and first render request are established.
+- Cache-busting version strings must remain aligned across index.html, manifest.webmanifest, assets/js/pwa.js and service-worker.js.
+
+SERVICE-WORKER RULES
+--------------------
+- Increment CACHE_NAME for every release.
+- Update every ?v= query in APP_SHELL and public asset references for every release.
+- Keep old-cache deletion limited to keys beginning bedroom-room-planner-.
+- Keep navigation network-first so a deployed index update can reach a browser controlled by an older worker.
+- Keep versioned static assets cache-first after the correct release has installed.
+
+PUBLIC DOCUMENTATION RULES
+--------------------------
+- README.md is public-facing.
+- Do not include private hardware specifications, local development history, client/family context or testing-machine details.
+- Keep release engineering notes in internal/PATCH_NOTES_vX.XX.txt and internal/HANDOVER_NOTES_vX.XX.txt as separate files.
+
+VALIDATION STILL REQUIRED ON DEPLOYMENT
+---------------------------------------
+- Confirm the live GitHub Pages URL loads v2.01 rather than a nested-folder 404.
+- Confirm an existing v2.00-controlled browser updates and reloads to v2.01.
+- Confirm a fresh browser completes first load, installs the service worker and remains usable offline after refresh.
+- Confirm the visible startup-error panel by temporarily blocking app.js in browser developer tools, then restore normal loading.

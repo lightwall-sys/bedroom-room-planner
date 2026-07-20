@@ -1,0 +1,60 @@
+BEDROOM ROOM PLANNER v2.01 — MANUAL GITHUB UPLOAD
+==================================================
+
+EXACT COMMIT MESSAGE
+--------------------
+Fix GitHub Pages startup and release Bedroom Room Planner v2.01
+
+RECOMMENDED BROWSER-ONLY FULL REPLACEMENT
+-----------------------------------------
+This method replaces the repository in one commit without connecting any external developer or service to the GitHub account.
+
+1. Download and extract Bedroom_Room_Planner_v2.01.zip.
+2. Open the existing bedroom-room-planner repository on GitHub while signed in.
+3. Press the full-stop key (.) to open the repository in GitHub's browser editor at github.dev.
+4. In the Explorer panel, delete the existing project files and folders from the repository workspace.
+5. Drag the CONTENTS of the extracted Bedroom_Room_Planner_v2.01 folder into the Explorer panel at the repository root.
+6. Confirm that index.html, README.md, manifest.webmanifest and service-worker.js are at the top level. Do not create a nested Bedroom_Room_Planner_v2.01 folder.
+7. Confirm that README_FIRST.txt, GITHUB_PAGES_SETUP.txt and CHANGELOG_v2.00.txt are absent.
+8. Open the Source Control panel.
+9. Stage all additions, modifications and deletions.
+10. Enter this commit message exactly:
+
+    Fix GitHub Pages startup and release Bedroom Room Planner v2.01
+
+11. Commit the changes, then use Sync Changes or Push so the commit reaches the main branch on GitHub.
+
+STANDARD GITHUB UPLOAD ALTERNATIVE
+----------------------------------
+If the browser editor is unavailable:
+1. In the repository, choose Add file > Upload files.
+2. Upload the CONTENTS of Bedroom_Room_Planner_v2.01 to the repository root and allow matching files to be replaced.
+3. Use the exact commit message shown above.
+4. After the upload, manually delete these obsolete v2.00 files if they remain:
+   - README_FIRST.txt
+   - GITHUB_PAGES_SETUP.txt
+   - CHANGELOG_v2.00.txt
+5. Do not delete .nojekyll.
+
+CHECK GITHUB PAGES
+------------------
+1. Open Settings > Pages in the repository.
+2. Under Build and deployment, use Deploy from a branch.
+3. Select the main branch and /(root), then save if those settings are not already active.
+4. Wait until GitHub reports a successful Pages deployment.
+5. Open the published Pages address and reload it once.
+6. Confirm that the header and App status panel show v2.01.
+7. Confirm that the room appears and the loading screen closes.
+8. The v2.01 service worker will replace the v2.00 cache and delete the old planner cache during activation.
+
+CACHE RECOVERY CHECK
+--------------------
+If a browser still shows v2.00 after the successful deployment:
+1. Close every open tab for the planner.
+2. Reopen the published Pages address.
+3. Perform one hard refresh.
+4. If startup still fails, use Reload with fresh files and inspect Technical details. v2.01 will no longer leave an endless spinner.
+
+NO ACCOUNT CONNECTION
+---------------------
+The replacement package does not connect to GitHub. The developer who prepared it did not access, authorise or modify the GitHub account or repository.

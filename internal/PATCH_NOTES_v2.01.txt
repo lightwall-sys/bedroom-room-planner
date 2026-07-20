@@ -1,0 +1,37 @@
+BEDROOM ROOM PLANNER v2.01 — INTERNAL PATCH NOTES
+==================================================
+
+ROOT CAUSE FIXED
+----------------
+- v2.00 bundled Three.js r124.
+- In r124, THREE.BoxGeometry produces legacy Geometry objects.
+- The Dimplex Quantum heater batching path treated those objects as BufferGeometry and called geometry.getAttribute("position").
+- That produced: TypeError: part.geometry.getAttribute is not a function.
+- Because the error occurred at top level, app.js stopped before the code that dismissed the loading overlay.
+- v2.01 normalises heater-part geometry to BufferGeometry inside qPart before batching.
+
+STARTUP FAILURE UX
+------------------
+- Added an inline startup guard before external assets load.
+- Captures JavaScript errors, unhandled promise rejections and failed script/style/resource loads during startup.
+- Adds a 15-second startup watchdog.
+- Replaces the spinner with a visible error panel, retry control and expandable technical details.
+- Successful planner initialisation now calls BedroomPlannerStartup.markReady().
+
+CACHE AND DEPLOYMENT
+--------------------
+- Added ?v=2.01 cache-busting to CSS, JavaScript, manifest and icon references.
+- Service worker registration now uses service-worker.js?v=2.01.
+- Service-worker cache renamed to bedroom-room-planner-v2-01.
+- Activation deletes older bedroom-room-planner-* caches, including v2.00.
+- Precache fetches use cache: reload so installation does not seed itself from stale HTTP-cache responses.
+- Versioned asset requests are matched with their query strings intact.
+- Existing controlled pages reload once when the replacement service worker takes control.
+
+DOCUMENTATION
+-------------
+- Removed README_FIRST.txt.
+- Replaced it with public README.md.
+- Removed private machine/development context from public documentation.
+- Added dedicated manual GitHub upload instructions with the exact commit message.
+- Kept patch notes and handover notes in separate internal files.

@@ -576,6 +576,7 @@ canvas {
   inset: 0;
   display: grid;
   place-items: center;
+  padding: 24px;
   background: #e4e0da;
   z-index: 30;
   transition: opacity 0.35s;
@@ -583,6 +584,88 @@ canvas {
 .loading.done {
   opacity: 0;
   pointer-events: none;
+}
+.startup-loading {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  color: #544b46;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.startup-loading p {
+  margin: 0;
+}
+.loading.failed .startup-loading {
+  display: none;
+}
+.startup-error {
+  width: min(520px, 100%);
+  padding: 28px;
+  border: 1px solid rgba(76, 63, 56, 0.18);
+  border-radius: 20px;
+  background: rgba(255, 253, 249, 0.94);
+  box-shadow: 0 24px 70px rgba(55, 45, 39, 0.16);
+  color: #3f3935;
+}
+.startup-error-kicker {
+  margin: 0 0 7px;
+  color: #8a6d5c;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.startup-error h2 {
+  margin: 0 0 10px;
+  font-size: clamp(22px, 4vw, 30px);
+  line-height: 1.08;
+}
+.startup-error > p:not(.startup-error-kicker) {
+  margin: 0 0 18px;
+  color: #655c57;
+  line-height: 1.55;
+}
+.startup-retry {
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 11px 17px;
+  background: #4b403a;
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.startup-retry:hover,
+.startup-retry:focus-visible {
+  background: #6b574c;
+  outline: 3px solid rgba(126, 106, 93, 0.22);
+  outline-offset: 2px;
+}
+.startup-error details {
+  margin-top: 18px;
+  border-top: 1px solid rgba(76, 63, 56, 0.12);
+  padding-top: 14px;
+}
+.startup-error summary {
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+}
+.startup-error pre {
+  max-height: 180px;
+  overflow: auto;
+  margin: 12px 0 0;
+  padding: 12px;
+  border-radius: 10px;
+  background: #eee9e3;
+  color: #514842;
+  font: 10px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 .spinner {
   width: 34px;
@@ -658,7 +741,7 @@ canvas {
   }
 }
 
-/* inherited planner controls, retained in v2.00 */
+/* inherited planner controls, retained in v2.01 */
 .mode-btn.active {
   background: #5d514b;
   color: #fff;
@@ -866,7 +949,7 @@ body.placement-mode canvas:active {
   }
 }
 
-/* v2.00 task-led interface */
+/* v2.01 task-led interface */
 :root {
   --panel-strong: rgba(250, 248, 245, 0.97);
   --panel-soft: rgba(250, 248, 245, 0.88);
@@ -1549,7 +1632,7 @@ body:not(.placement-mode) canvas:active {
   }
 }
 
-/* v2.00 placement ghost and fixed-heater refinement */
+/* v2.01 placement ghost and fixed-heater refinement */
 body.placing-new-item canvas {
   cursor: crosshair !important;
 }
@@ -1587,7 +1670,7 @@ body.placing-new-item canvas {
 }
 
 
-/* v2.00 performance-first compositing */
+/* v2.01 performance-first compositing */
 .glass{
   background:rgba(250,248,245,.975) !important;
   backdrop-filter:none !important;

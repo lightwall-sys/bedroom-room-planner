@@ -45,7 +45,14 @@
   if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
     addEventListener("load", async () => {
       try {
-        const registration = await navigator.serviceWorker.register("./service-worker.js");
+        const previousController = navigator.serviceWorker.controller;
+        let reloadingForUpdate = false;
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          if (!previousController || reloadingForUpdate) return;
+          reloadingForUpdate = true;
+          location.reload();
+        });
+        const registration = await navigator.serviceWorker.register("./service-worker.js?v=2.01");
         if (offlineStatus) offlineStatus.textContent = "Cached after first visit";
         registration.update().catch(() => {});
       } catch (error) {

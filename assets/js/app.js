@@ -309,6 +309,13 @@ const qScreen = new THREE.MeshStandardMaterial({
 });
 const qBuckets = new Map();
 function qPart(name, geometry, material, x, y, z) {
+  // Three.js r124 still returns legacy Geometry for classes such as BoxGeometry.
+  // The batching path below requires BufferGeometry, so normalise every part here.
+  if (!geometry?.isBufferGeometry) {
+    const legacyGeometry = geometry;
+    geometry = new THREE.BufferGeometry().fromGeometry(legacyGeometry);
+    legacyGeometry?.dispose?.();
+  }
   if (!qBuckets.has(material)) qBuckets.set(material, []);
   qBuckets.get(material).push({ name, geometry, x, y, z });
 }
@@ -2916,7 +2923,7 @@ function closeCoach() {
     .querySelectorAll(".coach-highlight")
     .forEach((e) => e.classList.remove("coach-highlight"));
   try {
-    localStorage.setItem("bedroomPlannerV200Tour", "done");
+    localStorage.setItem("bedroomPlannerV201Tour", "done");
   } catch (e) {}
 }
 document.getElementById("coachNext").onclick = () =>
@@ -2950,19 +2957,20 @@ setQuality("adaptive", false);
 updateGrid();
 updatePlacedList();
 setTimeout(() => {
-  document.getElementById("loading").classList.add("done");
+  window.BedroomPlannerStartup?.markReady();
+  if (!window.BedroomPlannerStartup) document.getElementById("loading")?.classList.add("done");
   requestRender(true, 2);
   commitHistory();
   let done = false;
   try {
-    done = localStorage.getItem("bedroomPlannerV200Tour") === "done";
+    done = localStorage.getItem("bedroomPlannerV201Tour") === "done";
   } catch (e) {}
   if (!done) setTimeout(() => showCoach(0), 380);
 }, 350);
 
 
 window.BedroomPlannerDiagnostics = {
-  version: "2.00",
+  version: "2.01",
   renderer,
   scene,
   camera,

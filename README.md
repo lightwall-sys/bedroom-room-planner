@@ -1,36 +1,48 @@
-BEDROOM ROOM PLANNER v2.00
-==============================
+# Bedroom Room Planner
 
-START HERE
-----------
-For ordinary use after GitHub Pages is set up, open the published web address.
+Bedroom Room Planner is a browser-based 3D planning tool for exploring a measured bedroom layout, testing bed positions, arranging planning furniture and comparing paint, flooring and lighting choices.
 
-For local testing, extract this whole folder and open index.html. The planner itself will run, but app installation and the offline service worker only work when it is served over HTTPS, such as through GitHub Pages.
+## Current release
 
-WHAT CHANGED IN v2.00
----------------------
-- Rebuilt as a structured GitHub Pages / Progressive Web App project.
-- Assets are split so the browser can cache them instead of reparsing one enormous HTML file.
-- The app remains usable from the extracted folder as a fallback.
-- Static measured room geometry is merged into render batches to reduce draw calls.
-- Rendering is strictly on demand; there is no permanent game loop while the scene is idle.
-- Shadow maps are not regenerated while the camera or a placement ghost is moving.
-- Adaptive quality is now the default, with a 1.0 pixel ratio and only the warm overhead shadow enabled.
-- High quality restores daylight shadows and a higher render resolution for screenshots.
-- Expensive live backdrop blur over the WebGL canvas has been removed while preserving the visual panel design.
-- Cutaway walls are solid visibility groups and never use transparent wall materials.
-- The existing measured geometry, Dimplex Quantum heater, bed presets, furniture library, placement ghost, paint, floor, time-of-day and lighting controls are retained.
+**v2.01** fixes the GitHub Pages startup failure in v2.00 and adds a visible diagnostic screen when the planner cannot initialise.
 
-FILES
------
-index.html                 Main planner
+## Features
+
+- Measured room geometry with automatic cutaway walls
+- Design, doorway and plan camera views
+- Bed-wall presets and deliberate object-placement mode
+- Furniture planning library with placement checks
+- Paint, accent-wall and flooring controls
+- Time-of-day, daylight and overhead-light controls
+- Undo and redo history
+- Installable Progressive Web App support on compatible browsers
+- Offline app shell after a successful first visit
+
+## Run the planner
+
+For normal use, open the published GitHub Pages address in a current desktop browser with WebGL enabled.
+
+For a basic local preview, extract the repository and open `index.html`. Browser installation and offline caching require the project to be served over HTTPS, such as through GitHub Pages.
+
+## Publish with GitHub Pages
+
+The repository is designed to be uploaded as a static GitHub Pages project. `index.html` must remain at the repository root.
+
+See [`GITHUB_UPLOAD_INSTRUCTIONS_v2.01.txt`](GITHUB_UPLOAD_INSTRUCTIONS_v2.01.txt) for the exact manual replacement and deployment steps.
+
+## Project structure
+
+```text
+index.html                 Planner interface and startup guard
 manifest.webmanifest       Installable-app metadata
-service-worker.js          Offline cache
-assets/                    Styles, scripts, engine and icons
-dummy-items/               Product and source records
-GITHUB_PAGES_SETUP.txt     Beginner-friendly publishing instructions
-CHANGELOG_v2.00.txt        Technical pass notes
+service-worker.js          Versioned offline cache
+assets/css/                Planner styles
+assets/js/                 Three.js, controls, model data and planner logic
+assets/icons/              PWA icons
+dummy-items/               Planning-item and source records
+internal/                  Release patch notes and developer handover notes
+```
 
-PERFORMANCE TARGET
-------------------
-Adaptive mode is the intended everyday setting for the Gigabyte G5 / RTX 3060 / i5-10500H test target and ordinary modern Macs. High is deliberately reserved for still screenshots.
+## Browser requirements
+
+The 3D planner requires JavaScript and WebGL. When startup fails because a file is missing, stale or incompatible, v2.01 replaces the endless loading spinner with an on-screen error message and technical details.

@@ -1,37 +1,76 @@
-const CACHE_NAME = "bedroom-room-planner-v2-00";
+const CACHE_PREFIX = "bedroom-room-planner-";
+const CACHE_NAME = "bedroom-room-planner-v2-01";
+const ASSET_VERSION = "2.01";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./manifest.webmanifest",
-  "./assets/css/app.css",
-  "./assets/js/vendor/three.min.js",
-  "./assets/js/vendor/OrbitControls.js",
-  "./assets/js/model-data.js",
-  "./assets/js/app.js",
-  "./assets/js/pwa.js",
-  "./assets/icons/icon-192.png",
-  "./assets/icons/icon-512.png"
+  "./manifest.webmanifest?v=2.01",
+  "./assets/css/app.css?v=2.01",
+  "./assets/js/vendor/three.min.js?v=2.01",
+  "./assets/js/vendor/OrbitControls.js?v=2.01",
+  "./assets/js/model-data.js?v=2.01",
+  "./assets/js/app.js?v=2.01",
+  "./assets/js/pwa.js?v=2.01",
+  "./assets/icons/icon-192.png?v=2.01",
+  "./assets/icons/icon-512.png?v=2.01"
 ];
+
+async function precacheAppShell() {
+  const cache = await caches.open(CACHE_NAME);
+  for (const url of APP_SHELL) {
+    const request = new Request(url, { cache: "reload" });
+    const response = await fetch(request);
+    if (!response.ok) throw new Error(`Unable to cache ${url}: HTTP ${response.status}`);
+    await cache.put(url, response);
+  }
+}
+
 self.addEventListener("install", event => {
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
+  event.waitUntil(precacheAppShell().then(() => self.skipWaiting()));
 });
+
 self.addEventListener("activate", event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim()));
+  event.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(
+        keys
+          .filter(key => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
+          .map(key => caches.delete(key))
+      ))
+      .then(() => self.clients.claim())
+  );
 });
+
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
   const requestURL = new URL(event.request.url);
   if (requestURL.origin !== self.location.origin) return;
+
   if (event.request.mode === "navigate") {
-    event.respondWith(fetch(event.request).then(response => {
-      const copy = response.clone();
-      caches.open(CACHE_NAME).then(cache => cache.put("./index.html", copy));
-      return response;
-    }).catch(() => caches.match("./index.html")));
+    event.respondWith((async () => {
+      try {
+        const response = await fetch(new Request(event.request, { cache: "no-store" }));
+        if (response.ok) {
+          const cache = await caches.open(CACHE_NAME);
+          await cache.put("./index.html", response.clone());
+        }
+        return response;
+      } catch (error) {
+        return (await caches.match("./index.html")) || (await caches.match("./")) || Response.error();
+      }
+    })());
     return;
   }
-  event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
-    if (response.ok) caches.open(CACHE_NAME).then(cache => cache.put(event.request, response.clone()));
+
+  event.respondWith((async () => {
+    const cached = await caches.match(event.request, { ignoreSearch: false });
+    if (cached) return cached;
+
+    const response = await fetch(event.request);
+    if (response.ok && requestURL.searchParams.get("v") === ASSET_VERSION) {
+      const cache = await caches.open(CACHE_NAME);
+      await cache.put(event.request, response.clone());
+    }
     return response;
-  })));
+  })());
 });
