@@ -1,0 +1,52 @@
+GITHUB PAGES SETUP — BEDROOM ROOM PLANNER v2.00
+===================================================
+
+PART 1 — CREATE THE REPOSITORY
+1. Sign in to GitHub.
+2. Click the + button in the top-right and choose New repository.
+3. Name it: bedroom-room-planner
+4. Choose Public. GitHub Pages can publish a public repository on the free plan.
+5. Leave “Add a README file” off, because this package already contains its own files.
+6. Click Create repository.
+
+PART 2 — UPLOAD THIS PROJECT
+1. Extract Bedroom_Room_Planner_v2.00.zip on your computer.
+2. Open the extracted Bedroom_Room_Planner_v2.00 folder.
+3. In the empty GitHub repository, choose “uploading an existing file”.
+4. Drag the CONTENTS of the extracted folder into GitHub — index.html must appear at the repository’s top level, not inside another folder.
+5. Wait for every file to finish uploading.
+6. In the Commit changes box, enter: Bedroom Room Planner v2.00
+7. Click Commit changes.
+
+PART 3 — TURN ON GITHUB PAGES
+1. Open the repository’s Settings tab.
+2. In the left sidebar, choose Pages under “Code and automation”.
+3. Under Build and deployment, set Source to “Deploy from a branch”.
+4. Set Branch to main and Folder to /(root).
+5. Click Save.
+6. GitHub will build the site. It may take several minutes.
+7. Return to Settings > Pages and click Visit site when the address appears.
+
+The address will normally look like:
+https://YOUR-USERNAME.github.io/bedroom-room-planner/
+
+PART 4 — GIVE IT TO YOUR UNCLE
+Send him the published address, not the ZIP.
+
+On a recent Mac using Safari:
+- Open the address.
+- Choose File > Add to Dock if he wants it to behave like an app.
+
+On Windows using Chrome or Edge:
+- Open the address.
+- Use the planner’s Install app button when it appears, or use the browser’s install option.
+
+UPDATING IT LATER
+1. Open the repository on GitHub.
+2. Upload the replacement v2.xx project files over the existing structure.
+3. Commit the changes.
+4. Keep the same repository and Pages address; your uncle’s link will not change.
+5. The service worker uses a versioned cache, so a new release must also change CACHE_NAME in service-worker.js. Delivered releases will already do this.
+
+COMMON MISTAKE
+Do not upload the outer Bedroom_Room_Planner_v2.00 folder as one nested folder. GitHub must show index.html immediately in the repository root.

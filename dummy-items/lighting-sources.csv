@@ -1,0 +1,5 @@
+﻿type,product,article_number,diameter_cm,height_cm,checked_date,source_url,notes
+flush,BARLAST LED ceiling/wall lamp,905.260.03,25,6.7,2026-07-20,https://www.ikea.com/gb/en/p/barlast-led-ceiling-wall-lamp-white-90526003/,Approximate planning proxy
+ceiling,SOLKLINT ceiling lamp,404.720.31,27,20,2026-07-20,https://www.ikea.com/gb/en/p/solklint-ceiling-lamp-brass-grey-clear-glass-40472031/,Approximate planning proxy
+pendant,VINDKAST pendant lamp,204.505.20,50,Approximate proxy drop,2026-07-20,https://www.ikea.com/gb/en/p/vindkast-pendant-lamp-white-20450520/,Official page specifies 50 cm shade diameter and 1.6 m cord; proxy drop is illustrative
+pendant,MISTERHULT pendant lamp,904.410.18,45,40,2026-07-20,https://www.ikea.com/gb/en/p/misterhult-pendant-lamp-bamboo-handmade-90441018/,Approximate planning proxy

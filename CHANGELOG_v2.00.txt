@@ -1,0 +1,52 @@
+BEDROOM ROOM PLANNER v2.00 — PATCH AND HANDOVER NOTES
+======================================================
+
+SOURCE LINEAGE
+- Replaces the pass previously labelled V7, which belongs to the v1.xx branch.
+- First release of the restructured GitHub Pages / PWA branch.
+- New version lineage starts at v2.00 as requested.
+
+ARCHITECTURE
+- index.html now contains interface markup only.
+- CSS, Three.js, OrbitControls, model data and planner logic are separately cached assets.
+- All paths are relative so the app works from a GitHub project-site subdirectory.
+- No build system, npm installation or server-side component is required.
+- Opening index.html locally remains a fallback; service-worker and install features require HTTPS.
+
+PERFORMANCE CHANGES
+- Removed the full-time rendering architecture; requestAnimationFrame is scheduled only when state changes or camera damping remains active.
+- Camera movement never rebuilds shadow maps.
+- Object dragging and ghost movement defer shadow refresh until placement is committed.
+- Static MODEL geometry is merged by bed/room, cutaway section, wall number, category and material.
+- Generic heater proxy is omitted before batching and replaced by the dimension-matched Dimplex Quantum model.
+- Adaptive default uses pixel ratio 1, PCF shadows, a 768 px overhead shadow map and no daylight shadow.
+- Balanced caps device pixel ratio at 1.15.
+- High caps device pixel ratio at 1.5 and restores daylight shadows for still images.
+- Removed backdrop-filter from live interface panels because blurring a changing WebGL canvas causes expensive GPU compositing.
+- Renderer stencil buffer disabled because this planner does not use stencil operations.
+- Generated procedural material textures reduced from 512 px to 256 px.
+
+CUTAWAY
+- Remains deterministic solid visibility, grouped by measured wall section.
+- Cutaway recalculates on camera changes, not as a full scene operation on every idle frame.
+- No wall material is converted to transparent or wireframe.
+
+PWA
+- Includes manifest with 192 px and 512 px icons.
+- Includes versioned service-worker cache and offline app shell.
+- Includes install prompt support for Chromium browsers and Safari Add to Dock guidance.
+
+MAINTENANCE RULES
+- Next code pass is v2.01, even if this release needs a correction.
+- Keep index.html and all asset paths relative.
+- Increment CACHE_NAME in service-worker.js for every delivered release.
+- Do not reintroduce backdrop blur over the WebGL canvas without profiling it.
+- Do not request shadow updates from generic pointermove, input or camera events.
+- High quality is for screenshots, not the everyday default.
+
+VALIDATION
+- JavaScript syntax checked with Node.
+- Manifest parsed as valid JSON.
+- Required asset paths and service-worker cache entries checked.
+- MODEL batching code statically checked against all 106 source parts.
+- Full GPU/browser performance must still be confirmed on the target Windows and Mac machines because containerised software rendering is not representative of an RTX 3060 or Apple GPU.
