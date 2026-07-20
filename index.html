@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#3b3532">
   <meta name="description" content="Interactive bedroom planning tool with measured room geometry, furniture placement and lighting controls.">
-  <title>Bedroom Room Planner v2.03</title>
+  <title>Bedroom Room Planner v2.04</title>
   <script>
     (() => {
-      const VERSION = "2.03";
+      const VERSION = "2.04";
       const STARTUP_TIMEOUT_MS = 15000;
       let ready = false;
       let timeoutId = null;
@@ -38,7 +38,7 @@
         details.textContent = pendingFailure.details;
         retry.onclick = () => {
           const next = new URL(location.href);
-          next.searchParams.set("reload", `v203-${Date.now()}`);
+          next.searchParams.set("reload", `v204-${Date.now()}`);
           location.replace(next.href);
         };
       }
@@ -87,15 +87,15 @@ ${event.filename}:${event.lineno || 0}:${event.colno || 0}` : ""}`);
       }, { once: true });
     })();
   </script>
-  <link rel="manifest" href="./manifest.webmanifest?v=2.03">
-  <link rel="icon" type="image/png" sizes="192x192" href="./assets/icons/icon-192.png?v=2.03">
-  <link rel="apple-touch-icon" href="./assets/icons/icon-192.png?v=2.03">
-  <link rel="stylesheet" href="./assets/css/app.css?v=2.03">
-  <script defer src="./assets/js/vendor/three.min.js?v=2.03"></script>
-  <script defer src="./assets/js/vendor/OrbitControls.js?v=2.03"></script>
-  <script defer src="./assets/js/model-data.js?v=2.03"></script>
-  <script defer src="./assets/js/app.js?v=2.03"></script>
-  <script defer src="./assets/js/pwa.js?v=2.03"></script>
+  <link rel="manifest" href="./manifest.webmanifest?v=2.04">
+  <link rel="icon" type="image/png" sizes="192x192" href="./assets/icons/icon-192.png?v=2.04">
+  <link rel="apple-touch-icon" href="./assets/icons/icon-192.png?v=2.04">
+  <link rel="stylesheet" href="./assets/css/app.css?v=2.04">
+  <script defer src="./assets/js/vendor/three.min.js?v=2.04"></script>
+  <script defer src="./assets/js/vendor/OrbitControls.js?v=2.04"></script>
+  <script defer src="./assets/js/model-data.js?v=2.04"></script>
+  <script defer src="./assets/js/app.js?v=2.04"></script>
+  <script defer src="./assets/js/pwa.js?v=2.04"></script>
 </head>
 <body>
 
@@ -106,7 +106,7 @@ ${event.filename}:${event.lineno || 0}:${event.colno || 0}` : ""}`);
     <p>Starting Bedroom Room Planner…</p>
   </div>
   <section class="startup-error" id="startupError" hidden aria-labelledby="startupErrorTitle">
-    <p class="startup-error-kicker">Bedroom Room Planner v2.03</p>
+    <p class="startup-error-kicker">Bedroom Room Planner v2.04</p>
     <h2 id="startupErrorTitle">The planner could not start</h2>
     <p id="startupErrorMessage">A required file or browser feature was unavailable.</p>
     <button class="startup-retry" id="startupRetry" type="button">Reload with fresh files</button>
@@ -117,7 +117,7 @@ ${event.filename}:${event.lineno || 0}:${event.colno || 0}` : ""}`);
   </section>
 </div>
 <header class="app-header">
-  <section class="brand glass"><div class="eyebrow">Dimension-driven room study · v2.03</div><h1>Bedroom room planner</h1><p>Drag empty space to look around. Furniture stays locked until you deliberately choose <b>Move objects</b>.</p></section>
+  <section class="brand glass"><div class="eyebrow">Dimension-driven room study · v2.04</div><h1>Bedroom room planner</h1><p>Drag empty space to look around. Furniture stays locked until you deliberately choose <b>Move objects</b>.</p></section>
   <nav class="taskbar glass" aria-label="Planner tools">
     <div class="tool-group"><span class="tool-label">View</span><div class="view-switch"><button class="btn active" data-view="design">Design</button><button class="btn" data-view="doorway">Doorway</button><button class="btn" data-view="plan">Plan</button></div></div>
     <div class="tool-divider"></div>
@@ -173,15 +173,15 @@ ${event.filename}:${event.lineno || 0}:${event.colno || 0}` : ""}`);
 <aside class="library glass" id="libraryDrawer" aria-hidden="true">
   <div class="drawer-head"><div><h2>Add furniture</h2><p>Choose a dimensionally sourced planning proxy, then place it deliberately.</p></div><button class="close" id="libraryClose" aria-label="Close furniture library">×</button></div>
   <div class="workflow-card library-intro"><b>How placement works</b><div class="workflow-steps"><div class="workflow-step"><i>1</i>Choose an item</div><div class="workflow-step"><i>2</i>Position and rotate its green ghost</div><div class="workflow-step"><i>3</i>Click to place, then fine-tune</div></div><div class="ghost-explainer"><b>Green means valid.</b> Use the visible 90° Rotate buttons before placing floor furniture. Use the 5° fine controls only for tight clearances. The preview turns red when it would overlap something or leave the usable room.</div></div>
-  <section class="section"><h3 class="section-title">Floor furniture</h3><div class="catalogue-grid"><article class="item-card" data-category-card="bedside"><span class="category">Bedside furniture</span><strong>HEMNES bedside table</strong><span class="dims">46 × 35 × 70 cm</span><p>Solid-looking two-tier planning proxy.</p><button class="btn" data-add-item="hemnes">Add bedside table</button></article><article class="item-card" data-category-card="drawers"><span class="category">Chest of drawers</span><strong>MALM 6-drawer chest</strong><span class="dims">80 × 48 × 123 cm</span><p>Includes approximate drawer-front divisions.</p><button class="btn" data-add-item="malm">Add chest</button></article><article class="item-card" data-category-card="wardrobe"><span class="category">Wardrobe</span><strong>PAX wardrobe frame</strong><span class="dims">100 × 58 × 201 cm</span><p>Standard-depth wardrobe planning volume.</p><button class="btn" data-add-item="pax">Add wardrobe</button></article><article class="item-card" data-category-card="wardrobe"><span class="category">Mirrored wardrobe</span><strong>BRIMNES 3-door wardrobe</strong><span class="dims">117 × 50 × 190 cm</span><p>Three-door proxy with a mirrored centre panel.</p><button class="btn" data-add-item="brimnes">Add mirrored wardrobe</button></article></div></section>
+  <section class="section"><h3 class="section-title">Floor furniture</h3><div class="catalogue-grid"><article class="item-card featured-item" data-category-card="wardrobe"><span class="category">Exact chosen wardrobe</span><strong>IDANÄS folding-door wardrobe</strong><span class="dims">121 × 59 × 211 cm</span><p>Detailed closed-door proxy using IKEA’s exact outer dimensions. Automatically aligns its back to nearby walls.</p><a class="source-link" href="https://www.ikea.com/gb/en/p/idanaes-wardrobe-white-60458835/" target="_blank" rel="noopener noreferrer">View IKEA product</a><button class="btn" data-add-item="idanaes">Add IDANÄS wardrobe</button></article><article class="item-card" data-category-card="bedside"><span class="category">Bedside furniture</span><strong>HEMNES bedside table</strong><span class="dims">46 × 35 × 70 cm</span><p>Solid-looking two-tier planning proxy.</p><button class="btn" data-add-item="hemnes">Add bedside table</button></article><article class="item-card" data-category-card="drawers"><span class="category">Chest of drawers</span><strong>MALM 6-drawer chest</strong><span class="dims">80 × 48 × 123 cm</span><p>Includes approximate drawer-front divisions.</p><button class="btn" data-add-item="malm">Add chest</button></article><article class="item-card" data-category-card="wardrobe"><span class="category">Wardrobe</span><strong>PAX wardrobe frame</strong><span class="dims">100 × 58 × 201 cm</span><p>Standard-depth wardrobe planning volume with automatic wall alignment.</p><button class="btn" data-add-item="pax">Add wardrobe</button></article><article class="item-card" data-category-card="wardrobe"><span class="category">Mirrored wardrobe</span><strong>BRIMNES 3-door wardrobe</strong><span class="dims">117 × 50 × 190 cm</span><p>Three-door proxy with a mirrored centre panel and automatic wall alignment.</p><button class="btn" data-add-item="brimnes">Add mirrored wardrobe</button></article></div></section>
   <section class="section"><h3 class="section-title">Wall-mounted</h3><div class="catalogue-grid"><article class="item-card"><span class="category">Mirror</span><strong>NISSEDAL mirror</strong><span class="dims">65 × 150 cm</span><p>Can be switched between portrait and landscape.</p><button class="btn" data-add-item="nissedal">Add mirror</button></article><article class="item-card"><span class="category">Wall art</span><strong>KNOPPÄNG frame</strong><span class="dims">52 × 72 × 2 cm</span><p>Wall-only placement prevents attachment to furniture.</p><button class="btn" data-add-item="knoppang">Add wall art</button></article></div></section>
-  <section class="section"><h3 class="section-title">Selected object</h3><div class="placement-hint" id="placementHint"><b>Move objects is on.</b> Drag the selected floor item in the room, or use the exact controls below.</div><div class="selected-card" id="selectedItemCard"><h4>Nothing selected</h4><p>Add an item or turn on Move objects and click furniture. The bed has its own controls in Room settings.</p><div id="floorItemControls" class="hidden"><div class="fields"><div class="field"><label for="itemX">X cm</label><input id="itemX" type="number"></div><div class="field"><label for="itemZ">Z cm</label><input id="itemZ" type="number"></div><div class="field"><label for="itemRotation">Angle</label><input id="itemRotation" type="number"></div></div><div class="rotation-control-stack"><div class="item-actions"><button class="btn" id="itemRotateLeft">↺ 90° <kbd>Q</kbd></button><button class="btn" id="itemRotateRight">90° ↻ <kbd>E</kbd></button></div><div class="item-actions fine-actions"><button class="btn fine" id="itemRotateFineLeft">↺ 5° <kbd>Shift Q</kbd></button><button class="btn fine" id="itemRotateFineRight">5° ↻ <kbd>Shift E</kbd></button></div></div><button class="btn danger delete-object-button" id="itemDelete">Delete object <kbd>Delete</kbd></button></div><div id="wallItemControls" class="hidden"><div class="fields"><div class="field"><label for="itemWall">Wall</label><select id="itemWall"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></div><div class="field"><label for="itemHeight">Height</label><input id="itemHeight" type="number"></div><div class="field"><label for="itemOffset">Along wall</label><input id="itemOffset" type="number"></div></div><div class="field" style="margin-top:8px"><label for="itemOrientation">Orientation</label><select id="itemOrientation"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select></div><button id="itemDeleteWall" class="btn danger delete-object-button">Delete item <kbd>Delete</kbd></button></div></div></section>
+  <section class="section"><h3 class="section-title">Selected object</h3><div class="placement-hint" id="placementHint"><b>Move objects is on.</b> Drag the selected floor item in the room, or use the exact controls below.</div><div class="selected-card" id="selectedItemCard"><h4>Nothing selected</h4><p>Add an item or turn on Move objects and click furniture. The bed has its own controls in Room settings.</p><div id="floorItemControls" class="hidden"><div class="fields"><div class="field"><label for="itemX">X cm</label><input id="itemX" type="number"></div><div class="field"><label for="itemZ">Z cm</label><input id="itemZ" type="number"></div><div class="field"><label for="itemRotation">Angle</label><input id="itemRotation" type="number"></div></div><div class="rotation-control-stack"><div class="item-actions"><button class="btn" id="itemRotateLeft">↺ 90° <kbd>Q</kbd></button><button class="btn" id="itemRotateRight">90° ↻ <kbd>E</kbd></button></div><div class="item-actions fine-actions"><button class="btn fine" id="itemRotateFineLeft">↺ 5° <kbd>Shift Q</kbd></button><button class="btn fine" id="itemRotateFineRight">5° ↻ <kbd>Shift E</kbd></button></div></div><div id="itemWallSnapControl" class="wall-snap-control hidden"><button class="btn" id="itemWallSnapToggle">Auto wall snap on <kbd>W</kbd></button><p class="subtle" id="itemWallSnapStatus">Move near a wall to align the wardrobe back automatically.</p></div><button class="btn danger delete-object-button" id="itemDelete">Delete object <kbd>Delete</kbd></button></div><div id="wallItemControls" class="hidden"><div class="fields"><div class="field"><label for="itemWall">Wall</label><select id="itemWall"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></div><div class="field"><label for="itemHeight">Height</label><input id="itemHeight" type="number"></div><div class="field"><label for="itemOffset">Along wall</label><input id="itemOffset" type="number"></div></div><div class="field" style="margin-top:8px"><label for="itemOrientation">Orientation</label><select id="itemOrientation"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select></div><button id="itemDeleteWall" class="btn danger delete-object-button">Delete item <kbd>Delete</kbd></button></div></div></section>
   <section class="section"><h3 class="section-title">Placed items</h3><div id="placedItemsList" class="status-card"><div class="status-line"><span>No dummy items yet</span><b>0</b></div></div><p class="source-note">The ZIP includes the dummy-items source records, dimensions and verification dates.</p></section>
 </aside>
 
 <aside class="hotkeys glass" id="hotkeysPanel" aria-hidden="true">
   <div class="drawer-head"><div><h2>Controls & shortcuts</h2><p>Every mouse, keyboard and editing control in one place.</p></div><button class="close" id="hotkeysClose" aria-label="Close controls">×</button></div>
-  <section class="help-section app-status-card"><h3 class="section-title">App status</h3><div class="status-line good"><span>Version</span><b>v2.03</b></div><div class="status-line good"><span>Offline cache</span><b id="offlineStatus">Checking…</b></div><p class="subtle">When opened from GitHub Pages, the planner can be installed and cached for offline use.</p></section>
+  <section class="help-section app-status-card"><h3 class="section-title">App status</h3><div class="status-line good"><span>Version</span><b>v2.04</b></div><div class="status-line good"><span>Offline cache</span><b id="offlineStatus">Checking…</b></div><p class="subtle">When opened from GitHub Pages, the planner can be installed and cached for offline use.</p></section>
   <section class="help-section"><h3 class="section-title">Mouse</h3><div class="mouse-grid"><div class="mouse-card"><b>Left-drag empty space</b>Orbit the camera</div><div class="mouse-card"><b>Right-drag empty space</b>Pan the camera; it never deletes furniture</div><div class="mouse-card"><b>Mouse wheel</b>Zoom in or out</div><div class="mouse-card"><b>Green placement ghost</b>Move it, rotate with the visible controls, then left-click to place</div><div class="mouse-card"><b>Move objects on</b>Left-click furniture to select it, then left-drag to move it</div><div class="mouse-card"><b>Selected object banner</b>Rotate, fine-rotate or delete without reopening a drawer</div></div></section>
   <section class="help-section"><h3 class="section-title">Keyboard</h3><div class="hotkey-grid">
     <div class="hotkey"><span>Move objects on / off</span><span class="keys"><i class="key">P</i></span></div>
@@ -190,6 +190,7 @@ ${event.filename}:${event.lineno || 0}:${event.colno || 0}` : ""}`);
     <div class="hotkey"><span>Rotate left / right by 90°</span><span class="keys"><i class="key">Q</i><i class="key">E</i></span></div>
     <div class="hotkey"><span>Fine rotate left / right by 5°</span><span class="keys"><i class="key">Shift Q</i><i class="key">Shift E</i></span></div>
     <div class="hotkey"><span>Snap active object to nearest 90°</span><span class="keys"><i class="key">R</i></span></div>
+    <div class="hotkey"><span>Toggle wardrobe auto wall snap / manual override</span><span class="keys"><i class="key">W</i></span></div>
     <div class="hotkey"><span>Delete selected furniture</span><span class="keys"><i class="key">Delete</i><i class="key">Backspace</i></span></div>
     <div class="hotkey"><span>Confirm / cancel placement</span><span class="keys"><i class="key">Enter</i><i class="key">Esc</i></span></div>
     <div class="hotkey"><span>Bed wall presets</span><span class="keys"><i class="key">1</i><i class="key">2</i><i class="key">5</i></span></div>
@@ -203,7 +204,7 @@ ${event.filename}:${event.lineno || 0}:${event.colno || 0}` : ""}`);
     <div class="hotkey"><span>Undo / redo</span><span class="keys"><i class="key">Ctrl Z</i><i class="key">Ctrl Y</i></span></div>
     <div class="hotkey"><span>Close panels or leave Move objects</span><span class="keys"><i class="key">Esc</i></span></div>
   </div></section>
-  <section class="help-section"><h3 class="section-title">Rotation behaviour</h3><p class="subtle">The main rotate controls always move in 90° steps. Use the Shift controls for 5° adjustments, or type an exact angle in Add furniture. Fine rotation may require small position nudges to keep a large item inside the room and clear of other furniture.</p><button class="btn" id="restartTour" style="width:100%;margin-top:9px">Show the guided tour</button></section>
+  <section class="help-section"><h3 class="section-title">Rotation and wardrobe snapping</h3><p class="subtle">The main rotate controls always move in 90° steps. Use the Shift controls for 5° adjustments, or type an exact angle in Add furniture. Wardrobes automatically align their backs flush to nearby walls. Any manual rotation switches that wardrobe to manual mode; press W or the visible wall-snap button to restore automatic alignment.</p><button class="btn" id="restartTour" style="width:100%;margin-top:9px">Show the guided tour</button></section>
 </aside>
 <div class="coachmark glass" id="coachmark" aria-live="polite"><div class="coachmark-top"><div class="coachmark-number" id="coachNumber">1</div><div><h3 id="coachTitle">Look around</h3><p id="coachCopy">Drag empty space in the room to orbit. Use the mouse wheel to zoom and right-drag to pan.</p></div></div><div class="coachmark-actions"><button class="btn" id="coachSkip">Skip tour</button><div><button class="btn" id="coachBack">Back</button><button class="btn active" id="coachNext">Next</button></div></div></div>
 <div class="toast" id="toast"></div>

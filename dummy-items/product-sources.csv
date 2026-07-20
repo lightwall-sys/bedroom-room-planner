@@ -1,6 +1,7 @@
 ﻿category,product,article_number,width_cm,depth_cm,height_cm,checked_date,source_url,notes
 bedside-furniture,HEMNES bedside table,506.107.39,46,35,70,2026-07-20,https://www.ikea.com/gb/en/p/hemnes-bedside-table-grey-green-light-brown-stained-50610739/,Approximate planning proxy
 chests-of-drawers,MALM chest of 6 drawers,604.036.02,80,48,123,2026-07-20,https://www.ikea.com/gb/en/p/malm-chest-of-6-drawers-white-60403602/,Approximate planning proxy; drawer pull-out not modelled
+wardrobes,IDANÄS wardrobe,604.588.35,121,59,211,2026-07-20,https://www.ikea.com/gb/en/p/idanaes-wardrobe-white-60458835/,Exact published outer dimensions; detailed closed-door planning proxy; bifold opening not animated; wall anchoring required
 wardrobes,PAX wardrobe frame,704.582.03,99.8,58,201.2,2026-07-20,https://www.ikea.com/gb/en/p/pax-wardrobe-frame-white-70458203/,Approximate planning proxy; doors/interiors not modelled; wall anchoring required
 mirrored-wardrobes,BRIMNES wardrobe with 3 doors,404.079.22,117,50,190,2026-07-20,https://www.ikea.com/gb/en/p/brimnes-wardrobe-with-3-doors-white-40407922/,Approximate planning proxy; door opening not animated; wall anchoring required
 mirrors,NISSEDAL mirror,006.054.86,65,2 planning allowance,150,2026-07-20,https://www.ikea.com/gb/en/p/nissedal-mirror-black-00605486/,Official page specifies width and height; proxy supports portrait/landscape

@@ -1,0 +1,124 @@
+BEDROOM ROOM PLANNER v2.04 — INTERNAL HANDOVER NOTES
+===================================================
+
+SOURCE LINEAGE
+--------------
+- Baseline: v2.03 complete repository.
+- Current public/runtime version: 2.04.
+- Service-worker cache: bedroom-room-planner-v2-04.
+- Asset query string: ?v=2.04.
+- Service-worker registration: ./service-worker.js?v=2.04.
+- Diagnostics: window.BedroomPlannerDiagnostics.version === "2.04".
+
+KEY FILES
+---------
+- index.html
+  Catalogue card, selected-object wall-snap controls, keyboard help and visible release markers.
+- assets/js/app.js
+  IDANÄS model, wardrobe item definition, wall-snap geometry, manual override, interaction and saved-state logic.
+- assets/css/app.css
+  Featured catalogue card, source link and wall-snap status/control styling.
+- dummy-items/product-sources.csv
+  Official IDANÄS dimensions and source URL.
+- service-worker.js / manifest.webmanifest / assets/js/pwa.js
+  v2.04 cache and PWA versioning.
+
+IDANÄS MODEL MAINTENANCE
+------------------------
+The item definition key is `idanaes` in `itemDefs`.
+
+Published dimensions:
+- width: 121 cm
+- depth: 59 cm
+- height: 211 cm
+- article: 604.588.35
+
+The `buildProxy()` IDANÄS branch deliberately keeps every component inside the published bounding volume. The full-depth top cap establishes the exact ±60.5 cm width, ±29.5 cm depth and 211 cm height. Do not add handles, moulding or door details beyond those bounds without also changing the collision footprint and product claim.
+
+The four front leaves are a visual planning approximation of the closed folding doors. Door-opening clearance and hinge animation are not currently modelled.
+
+WARDROBE FRONT DIRECTION
+------------------------
+For all floor proxies, local +Z is the front and local -Z is the back. Automatic wall snapping depends on this convention.
+
+Wall-aligned rotations:
+- Wall 1: 0°
+- Wall 2: -90°
+- Wall 3: 0°
+- Wall 4: -90°
+- Wall 5: 180°
+- Wall 6: 90°
+
+Do not reverse the IDANÄS door geometry to local -Z unless every wall-snap rotation is also revised.
+
+WALL-SNAP FUNCTIONS
+-------------------
+- `supportsAutoWallSnap(item)`
+- `floorWallSnapCandidates(item, rawX, rawZ)`
+- `nearestFloorWallSnap(item, rawX, rawZ)`
+- `applyFloorItemPosition(item, rawX, rawZ, allowWallSnap)`
+- `wallNormalExtent(item, rotation, wall)`
+- `detachFromSnappedWall(item, wall, oldRotation, newRotation)`
+- `wallSnapLabel(item)`
+- `toggleActiveWallSnap()`
+
+Constants:
+- `AUTO_WALL_SNAP_GAP = 0.8`
+- `AUTO_WALL_SNAP_DISTANCE = 38`
+
+The candidate system uses the actual room segments:
+- Wall 1: x 0..W1 at z 0
+- Wall 2: z 0..W2 at x W1
+- Wall 3: x W1..W5 at z W2
+- Wall 4: z W2..W6 at x W5
+- Wall 5: x 0..W5 at z W6
+- Wall 6: z 0..W6 at x 0
+
+A candidate is discarded when the wall segment cannot hold the object's full width plus a 2 cm end margin or when the resulting polygon is outside the measured room.
+
+MANUAL ROTATION CONTRACT
+------------------------
+Manual rotation must win over automatic wall alignment.
+
+For compatible wardrobes:
+- `wallSnapOverride === false` means dragging near a wall may set a canonical wall rotation.
+- `wallSnapOverride === true` means pointer movement preserves the user's angle and uses ordinary grid positioning.
+- Q/E, Shift+Q/E and numeric angle entry set the override.
+- W or the visible wall-snap control clears the override.
+
+When a snapped wardrobe rotates, `detachFromSnappedWall()` moves its centre inward by the difference between its old and new wall-normal extents. Do not remove this without replacing it with another method that prevents the object rotating through the wall.
+
+STATE FIELDS
+------------
+Floor wardrobes may carry:
+- `autoWallSnap`
+- `wallSnapOverride`
+- `snappedWall`
+
+`wallSnapOverride` and `snappedWall` are serialised in planner history. Old v2.03 history entries remain compatible because missing values default to false/null during rebuild.
+
+VALIDATION CHECKLIST
+--------------------
+1. Load v2.04 with no startup error.
+2. Confirm camera movement remains smooth.
+3. Confirm the IDANÄS card says 121 × 59 × 211 cm.
+4. Place it near Wall 1 and verify rotation 0° and back clearance approximately 0.8 cm.
+5. Place it near Walls 2, 4, 5 and 6 and verify the front faces inward.
+6. Confirm Wall 3 is rejected because the segment is too short for the 121 cm wardrobe.
+7. Press Q or E while snapped and verify manual override rather than immediate re-snapping.
+8. Press Shift+Q/E and verify 5° adjustment.
+9. Press W and verify automatic wall alignment resumes.
+10. Drag a manually overridden wardrobe near a wall and verify its manual angle is preserved until W is pressed.
+11. Confirm invalid overlap rollback restores rotation as well as position.
+12. Undo and redo placed wardrobes and verify snap state is restored.
+13. Confirm HEMNES, MALM, mirrors and wall art do not gain wardrobe wall snapping.
+14. Reload once and verify v2.04 cache activation.
+
+MAINTENANCE RULES
+-----------------
+- Preserve the single render scheduler introduced in v2.02.
+- Do not reintroduce wall shadow casting that caused the horizontal stripe artefact.
+- Keep Q/E as 90° and Shift+Q/E as 5°.
+- Keep all controls visibly documented in the interface and README.
+- New exact-product furniture must store its source and dimensions in dummy-items/product-sources.csv.
+- Do not claim an exact manufacturing model when only the outer planning dimensions are exact.

@@ -1737,7 +1737,7 @@ body.is-interacting .glass{box-shadow:0 8px 24px rgba(56,47,43,.11) !important}
   }
 }
 
-/* v2.03 clean-wall lighting, visible controls and deliberate fine editing */
+/* v2.04 exact IDANAS wardrobe and Sims-style wardrobe wall snapping */
 kbd {
   display: inline-flex;
   align-items: center;
@@ -1938,3 +1938,32 @@ kbd {
 .item-actions {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+
+
+/* v2.04 wardrobe catalogue and snap controls */
+.item-card.featured-item {
+  border-color: rgba(139,105,91,.42);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.45), 0 10px 28px rgba(62,49,43,.08);
+}
+.item-card .source-link {
+  display: inline-flex;
+  width: fit-content;
+  margin: 2px 0 10px;
+  color: #5f5049;
+  font-size: 11px;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.wall-snap-control {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+.wall-snap-control .btn { width: 100%; }
+.wall-snap-control .btn.active {
+  border-color: rgba(63,108,81,.55);
+  background: rgba(63,108,81,.1);
+  color: #31543f;
+}
+.wall-snap-control .subtle { margin: 0; }

@@ -52,7 +52,7 @@
           reloadingForUpdate = true;
           location.reload();
         });
-        const registration = await navigator.serviceWorker.register("./service-worker.js?v=2.03");
+        const registration = await navigator.serviceWorker.register("./service-worker.js?v=2.04");
         if (offlineStatus) offlineStatus.textContent = "Cached after first visit";
         registration.update().catch(() => {});
       } catch (error) {

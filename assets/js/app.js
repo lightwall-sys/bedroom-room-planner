@@ -1359,17 +1359,20 @@ function renderModeBanner({
   rotate = false,
   orientation = false,
   deletable = false,
+  wallSnap = "",
 } = {}) {
   const banner = document.getElementById("modeBanner");
   banner.classList.toggle("show", show);
   banner.classList.toggle("placing", placing);
   banner.classList.toggle("invalid", invalid);
-  banner.classList.toggle("has-actions", rotate || orientation || deletable);
+  banner.classList.toggle("has-actions", rotate || orientation || deletable || wallSnap);
   let actionButtons = "";
   if (orientation)
     actionButtons += '<button type="button" data-quick-rotate="1" data-fine="false">↔ Switch orientation</button>';
   if (rotate)
     actionButtons += '<button type="button" data-quick-rotate="-1" data-fine="false">↺ 90° <kbd>Q</kbd></button><button type="button" data-quick-rotate="1" data-fine="false">90° <kbd>E</kbd> ↻</button><button type="button" class="fine" data-quick-rotate="-1" data-fine="true">↺ 5° <kbd>Shift Q</kbd></button><button type="button" class="fine" data-quick-rotate="1" data-fine="true">5° <kbd>Shift E</kbd> ↻</button>';
+  if (wallSnap)
+    actionButtons += `<button type="button" data-quick-wall-snap="true">${wallSnap}</button>`;
   if (deletable)
     actionButtons += '<button type="button" class="delete" data-quick-delete="true">Delete <kbd>Del</kbd></button>';
   const actions = actionButtons ? `<span class="mode-banner-actions">${actionButtons}</span>` : "";
@@ -1384,6 +1387,11 @@ function renderModeBanner({
       if (pendingPlacement) rotatePending(direction, fine);
       else rotateSelectedItem(direction, fine);
     });
+  });
+  banner.querySelector("[data-quick-wall-snap]")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    toggleActiveWallSnap();
   });
   banner.querySelector("[data-quick-delete]")?.addEventListener("click", (event) => {
     event.preventDefault();
@@ -1405,9 +1413,10 @@ function refreshMoveBanner() {
     return;
   }
   const wallMounted = selectedPlacedItem.mount === "wall";
+  const autoSnap = supportsAutoWallSnap(selectedPlacedItem);
   const detail = wallMounted
     ? "Switch orientation or delete here. Right-drag only pans the camera."
-    : `Drag or use arrows to move. Angle ${normalizeAngle(selectedPlacedItem.rotation).toFixed(0)}°. 90° is the default; Shift gives 5°.`;
+    : `Drag or use arrows to move. Angle ${normalizeAngle(selectedPlacedItem.rotation).toFixed(0)}°. Q/E rotate 90°; Shift gives 5°.${autoSnap ? " Wardrobes align their backs to nearby walls unless manually overridden." : ""}`;
   renderModeBanner({
     show: true,
     title: `${selectedPlacedItem.name} selected.`,
@@ -1415,6 +1424,7 @@ function refreshMoveBanner() {
     rotate: !wallMounted,
     orientation: wallMounted,
     deletable: true,
+    wallSnap: wallMounted ? "" : wallSnapLabel(selectedPlacedItem),
   });
 }
 function setPlacementMode(enabled, announce = true) {
@@ -1447,6 +1457,9 @@ function setPlacementMode(enabled, announce = true) {
 const proxyMaterials = {
   wood: new THREE.MeshStandardMaterial({ color: 0xd6c2a7, roughness: 0.82 }),
   white: new THREE.MeshStandardMaterial({ color: 0xf0eee9, roughness: 0.75 }),
+  idanasWhite: new THREE.MeshStandardMaterial({ color: 0xf4f1ea, roughness: 0.82 }),
+  idanasInset: new THREE.MeshStandardMaterial({ color: 0xe8e4dc, roughness: 0.88 }),
+  idanasHardware: new THREE.MeshStandardMaterial({ color: 0x6b665f, roughness: 0.5, metalness: 0.12 }),
   dark: new THREE.MeshStandardMaterial({ color: 0x3d3936, roughness: 0.72 }),
   mirror: new THREE.MeshStandardMaterial({
     color: 0xb8c3c8,
@@ -1474,6 +1487,17 @@ const itemDefs = {
     h: 123,
     source: "IKEA 604.036.02",
   },
+  idanaes: {
+    name: "IDANÄS folding-door wardrobe",
+    category: "Folding-door wardrobe",
+    mount: "floor",
+    w: 121,
+    d: 59,
+    h: 211,
+    source: "IKEA 604.588.35",
+    sourceUrl: "https://www.ikea.com/gb/en/p/idanaes-wardrobe-white-60458835/",
+    autoWallSnap: true,
+  },
   pax: {
     name: "PAX wardrobe frame",
     category: "Wardrobe",
@@ -1482,6 +1506,7 @@ const itemDefs = {
     d: 58,
     h: 201.2,
     source: "IKEA 704.582.03",
+    autoWallSnap: true,
   },
   brimnes: {
     name: "BRIMNES 3-door wardrobe",
@@ -1491,6 +1516,7 @@ const itemDefs = {
     d: 50,
     h: 190,
     source: "IKEA 404.079.22",
+    autoWallSnap: true,
   },
   nissedal: {
     name: "NISSEDAL mirror",
@@ -1541,6 +1567,15 @@ function addProxyBox(group, w, h, d, x, y, z, material) {
   if (proxyMeshRegistration) itemMeshes.push(m);
   return m;
 }
+function addProxySphere(group, radius, x, y, z, material) {
+  const m = new THREE.Mesh(new THREE.SphereGeometry(radius, 12, 8), material.clone());
+  m.position.set(x, y, z);
+  m.castShadow = true;
+  m.receiveShadow = true;
+  group.add(m);
+  if (proxyMeshRegistration) itemMeshes.push(m);
+  return m;
+}
 function buildProxy(def, key, registerMeshes = true) {
   const previousRegistration = proxyMeshRegistration;
   proxyMeshRegistration = registerMeshes;
@@ -1565,6 +1600,42 @@ function buildProxy(def, key, registerMeshes = true) {
         def.d / 2 + 0.3,
         proxyMaterials.dark,
       );
+  } else if (key === "idanaes") {
+    // Closed planning model based on the white IDANÄS bifold-door wardrobe.
+    // The overall bounding volume remains exactly 121 × 59 × 211 cm.
+    const frontZ = def.d / 2 - 1;
+    const doorBottom = 21;
+    const doorHeight = 181;
+    const doorTop = doorBottom + doorHeight;
+    const innerWidth = def.w - 10;
+    const doorGap = 0.6;
+    const leafWidth = (innerWidth - doorGap * 3) / 4;
+    const firstLeafX = -innerWidth / 2 + leafWidth / 2;
+
+    // Full-depth cap fixes the exact outer dimensions; the remaining pieces sit within it.
+    addProxyBox(g, def.w, 5, def.d, 0, def.h - 2.5, 0, proxyMaterials.idanasWhite);
+    addProxyBox(g, def.w - 6, 6, def.d - 4, 0, 18, 0, proxyMaterials.idanasWhite);
+    addProxyBox(g, def.w - 8, 184, 1.4, 0, 111, -def.d / 2 + 0.7, proxyMaterials.idanasInset);
+
+    for (const x of [-def.w / 2 + 1.5, def.w / 2 - 1.5])
+      addProxyBox(g, 3, 188, def.d - 4, x, 112, 0, proxyMaterials.idanasWhite);
+
+    for (const x of [-def.w / 2 + 4.5, def.w / 2 - 4.5])
+      for (const z of [-def.d / 2 + 4.5, def.d / 2 - 4.5])
+        addProxyBox(g, 4.5, 12, 4.5, x, 6, z, proxyMaterials.idanasWhite);
+
+    addProxyBox(g, def.w - 5, 4.5, def.d - 4, 0, doorBottom - 1.5, 0, proxyMaterials.idanasWhite);
+
+    for (let i = 0; i < 4; i++) {
+      const x = firstLeafX + i * (leafWidth + doorGap);
+      addProxyBox(g, leafWidth, doorHeight, 2, x, doorBottom + doorHeight / 2, frontZ, proxyMaterials.idanasWhite);
+      addProxyBox(g, leafWidth - 4.2, doorHeight - 12, 0.55, x, doorBottom + doorHeight / 2, def.d / 2 - 0.28, proxyMaterials.idanasInset);
+      addProxyBox(g, 1.3, doorHeight - 7, 0.45, x - leafWidth / 2 + 2.1, doorBottom + doorHeight / 2, def.d / 2 - 0.23, proxyMaterials.idanasWhite);
+      addProxyBox(g, 1.3, doorHeight - 7, 0.45, x + leafWidth / 2 - 2.1, doorBottom + doorHeight / 2, def.d / 2 - 0.23, proxyMaterials.idanasWhite);
+      addProxyBox(g, leafWidth - 3.2, 2, 0.45, x, doorTop - 3, def.d / 2 - 0.23, proxyMaterials.idanasWhite);
+      addProxyBox(g, leafWidth - 3.2, 2, 0.45, x, doorBottom + 3, def.d / 2 - 0.23, proxyMaterials.idanasWhite);
+      addProxySphere(g, 0.68, x, 106, def.d / 2 - 0.68, proxyMaterials.idanasHardware);
+    }
   } else if (key === "pax") {
     addProxyBox(g, def.w, def.h, def.d, 0, def.h / 2, 0, proxyMaterials.white);
     addProxyBox(
@@ -1651,6 +1722,88 @@ function objectPolygon(item, x = item.x, z = item.z, rotation = item.rotation) {
     [-hw, hd],
   ].map(([px, pz]) => [x + px * c + pz * s, z - px * s + pz * c]);
 }
+const AUTO_WALL_SNAP_GAP = 0.8;
+const AUTO_WALL_SNAP_DISTANCE = 38;
+function supportsAutoWallSnap(item) {
+  return item?.mount === "floor" && !!item.autoWallSnap;
+}
+function floorWallSnapCandidates(item, rawX, rawZ) {
+  const halfAlong = item.w / 2;
+  const halfDepth = item.d / 2;
+  const edgeMargin = 2;
+  const candidates = [];
+  function add(wall, axis, start, end, fixed, rotation) {
+    const lo = start + halfAlong + edgeMargin;
+    const hi = end - halfAlong - edgeMargin;
+    if (lo > hi) return;
+    const along = THREE.MathUtils.clamp(axis === "x" ? rawX : rawZ, lo, hi);
+    const x = axis === "x" ? along : fixed;
+    const z = axis === "z" ? along : fixed;
+    const poly = objectPolygon(item, x, z, rotation);
+    if (!polygonInsideRoom(poly)) return;
+    candidates.push({
+      wall,
+      x,
+      z,
+      rotation,
+      distance: Math.hypot(x - rawX, z - rawZ),
+    });
+  }
+  add(1, "x", 0, D.W1, halfDepth + AUTO_WALL_SNAP_GAP, 0);
+  add(2, "z", 0, D.W2, D.W1 - halfDepth - AUTO_WALL_SNAP_GAP, -90);
+  add(3, "x", D.W1, D.W5, D.W2 + halfDepth + AUTO_WALL_SNAP_GAP, 0);
+  add(4, "z", D.W2, D.W6, D.W5 - halfDepth - AUTO_WALL_SNAP_GAP, -90);
+  add(5, "x", 0, D.W5, D.W6 - halfDepth - AUTO_WALL_SNAP_GAP, 180);
+  add(6, "z", 0, D.W6, halfDepth + AUTO_WALL_SNAP_GAP, 90);
+  return candidates.sort((a, b) => a.distance - b.distance);
+}
+function nearestFloorWallSnap(item, rawX, rawZ) {
+  if (!supportsAutoWallSnap(item) || item.wallSnapOverride) return null;
+  const candidate = floorWallSnapCandidates(item, rawX, rawZ)[0];
+  return candidate && candidate.distance <= AUTO_WALL_SNAP_DISTANCE ? candidate : null;
+}
+function applyFloorItemPosition(item, rawX, rawZ, allowWallSnap = true) {
+  const x = snapValue(rawX);
+  const z = snapValue(rawZ);
+  const candidate = allowWallSnap ? nearestFloorWallSnap(item, x, z) : null;
+  if (candidate) {
+    item.x = candidate.x;
+    item.z = candidate.z;
+    item.rotation = candidate.rotation;
+    item.snappedWall = candidate.wall;
+  } else {
+    item.x = x;
+    item.z = z;
+    item.snappedWall = null;
+  }
+  item.group.position.set(item.x, 0, item.z);
+  item.group.rotation.y = THREE.MathUtils.degToRad(item.rotation);
+  return candidate;
+}
+function wallNormalExtent(item, rotation, wall) {
+  const angle = THREE.MathUtils.degToRad(rotation);
+  const xExtent = Math.abs(Math.cos(angle)) * item.w / 2 + Math.abs(Math.sin(angle)) * item.d / 2;
+  const zExtent = Math.abs(Math.sin(angle)) * item.w / 2 + Math.abs(Math.cos(angle)) * item.d / 2;
+  return wall === 1 || wall === 3 || wall === 5 ? zExtent : xExtent;
+}
+function detachFromSnappedWall(item, wall, oldRotation, newRotation) {
+  if (!wall) return;
+  const oldExtent = wallNormalExtent(item, oldRotation, wall);
+  const newExtent = wallNormalExtent(item, newRotation, wall);
+  const shift = Math.max(0, newExtent - oldExtent) + 0.8;
+  if (wall === 1 || wall === 3) item.z += shift;
+  else if (wall === 2 || wall === 4) item.x -= shift;
+  else if (wall === 5) item.z -= shift;
+  else if (wall === 6) item.x += shift;
+}
+function wallSnapLabel(item) {
+  if (!supportsAutoWallSnap(item)) return "";
+  if (item.wallSnapOverride) return "Restore wall snap <kbd>W</kbd>";
+  return item.snappedWall
+    ? `Wall ${item.snappedWall} snapped <kbd>W</kbd>`
+    : "Auto wall snap on <kbd>W</kbd>";
+}
+
 function validateFloorItem(
   item,
   x = item.x,
@@ -1816,8 +1969,9 @@ function updateSelectedPanel() {
   }
   const item = selectedPlacedItem;
   card.querySelector("h4").textContent = item.name;
-  card.querySelector("p").textContent =
-    `${item.category} · ${item.source} · approximate planning proxy`;
+  card.querySelector("p").textContent = item.key === "idanaes"
+    ? `${item.category} · ${item.source} · exact 121 × 59 × 211 cm outer dimensions`
+    : `${item.category} · ${item.source} · approximate planning proxy`;
   if (item.mount === "floor") {
     floor.classList.remove("hidden");
     wall.classList.add("hidden");
@@ -1826,6 +1980,18 @@ function updateSelectedPanel() {
     document.getElementById("itemRotation").value = normalizeAngle(
       item.rotation,
     ).toFixed(0);
+    const wallSnapControl = document.getElementById("itemWallSnapControl");
+    const wallSnapButton = document.getElementById("itemWallSnapToggle");
+    wallSnapControl.classList.toggle("hidden", !supportsAutoWallSnap(item));
+    if (supportsAutoWallSnap(item)) {
+      wallSnapButton.innerHTML = wallSnapLabel(item);
+      wallSnapButton.classList.toggle("active", !item.wallSnapOverride);
+      document.getElementById("itemWallSnapStatus").textContent = item.wallSnapOverride
+        ? "Manual angle override is active. Press W to restore automatic wall alignment."
+        : item.snappedWall
+          ? `Back aligned flush to Wall ${item.snappedWall}. Rotate manually to override.`
+          : "Move near a wall and the wardrobe back will align and sit flush automatically.";
+    }
   } else {
     floor.classList.add("hidden");
     wall.classList.remove("hidden");
@@ -1906,6 +2072,7 @@ function ghostMessage(text, invalid = false) {
     text,
     rotate: item?.mount !== "wall",
     orientation: item?.mount === "wall",
+    wallSnap: item?.mount === "floor" ? wallSnapLabel(item) : "",
   });
 }
 function setGhostAppearance(valid, message) {
@@ -1919,7 +2086,9 @@ function setGhostAppearance(valid, message) {
   pendingPlacement.outline.material.color.setHex(colour);
   pendingPlacement.outline.setFromObject(pendingPlacement.group);
   ghostMessage(
-    valid ? "Rotate 90° with Q/E, fine-tune 5° with Shift, then click to place · Esc cancels" : message,
+    valid
+      ? `${supportsAutoWallSnap(pendingPlacement.item) ? "Wardrobe backs snap to nearby walls. " : ""}Rotate 90° with Q/E, fine-tune 5° with Shift, then click to place · Esc cancels`
+      : message,
     !valid,
   );
   requestRender(false, 1);
@@ -1964,6 +2133,9 @@ function beginItemPlacement(key) {
       d: def.d,
       h: def.h,
       rotation: 0,
+      autoWallSnap: !!def.autoWallSnap,
+      wallSnapOverride: false,
+      snappedWall: null,
       group,
     };
   prepareGhost(group);
@@ -2035,10 +2207,7 @@ function updatePendingPlacement(e) {
       pendingPlacement.outline.visible = false;
       return;
     }
-    item.x = snapValue(dragPoint.x);
-    item.z = snapValue(dragPoint.z);
-    item.group.position.set(item.x, 0, item.z);
-    item.group.rotation.y = THREE.MathUtils.degToRad(item.rotation);
+    applyFloorItemPosition(item, dragPoint.x, dragPoint.z, true);
     pendingPlacement.hasPosition = true;
   } else {
     const hits = raycaster.intersectObjects(
@@ -2068,7 +2237,15 @@ function rotatePending(dir = 1, fine = false) {
       item.orientation === "portrait" ? "landscape" : "portrait";
     if (pendingPlacement.hasPosition) wallPosition(item);
   } else {
+    const oldRotation = item.rotation;
+    const oldWall = item.snappedWall;
     item.rotation = normalizeAngle(item.rotation + dir * rotationStep(fine));
+    if (supportsAutoWallSnap(item)) {
+      item.wallSnapOverride = true;
+      detachFromSnappedWall(item, oldWall, oldRotation, item.rotation);
+      item.snappedWall = null;
+    }
+    item.group.position.set(item.x, 0, item.z);
     item.group.rotation.y = THREE.MathUtils.degToRad(item.rotation);
   }
   if (pendingPlacement.hasPosition) {
@@ -2080,9 +2257,7 @@ function nudgePending(dx, dz) {
   if (!pendingPlacement || !pendingPlacement.hasPosition) return;
   const item = pendingPlacement.item;
   if (item.mount === "floor") {
-    item.x = snapValue(item.x + dx);
-    item.z = snapValue(item.z + dz);
-    item.group.position.set(item.x, 0, item.z);
+    applyFloorItemPosition(item, item.x + dx, item.z + dz, true);
   } else {
     item.offset = snapValue(item.offset + dx);
     item.height = snapValue(item.height - dz);
@@ -2124,6 +2299,9 @@ function confirmPendingPlacement(e) {
       d: p.def.d,
       h: p.def.h,
       rotation: temp.rotation || 0,
+      autoWallSnap: !!p.def.autoWallSnap,
+      wallSnapOverride: !!temp.wallSnapOverride,
+      snappedWall: temp.snappedWall || null,
       group,
     };
   group.userData.itemRef = item;
@@ -2184,16 +2362,15 @@ function moveSelectedItem(dx, dz) {
     return;
   }
   const item = selectedPlacedItem,
-    old = { x: item.x, z: item.z };
-  item.x = snapValue(item.x + dx);
-  item.z = snapValue(item.z + dz);
+    old = { x: item.x, z: item.z, rotation: item.rotation, snappedWall: item.snappedWall };
+  applyFloorItemPosition(item, item.x + dx, item.z + dz, true);
   const v = validateFloorItem(item);
   if (v.hard) {
-    item.x = old.x;
-    item.z = old.z;
+    Object.assign(item, old);
     toast(v.message);
   }
   item.group.position.set(item.x, 0, item.z);
+  item.group.rotation.y = THREE.MathUtils.degToRad(item.rotation);
   updateSelectedPanel();
   updatePlacedList();
   requestRender(true, 2);
@@ -2215,12 +2392,24 @@ function rotateSelectedItem(dir, fine = false) {
       toast("That orientation does not fit here");
     }
   } else {
-    const old = item.rotation;
+    const old = {
+      rotation: item.rotation,
+      x: item.x,
+      z: item.z,
+      snappedWall: item.snappedWall,
+      wallSnapOverride: item.wallSnapOverride,
+    };
     item.rotation = normalizeAngle(item.rotation + dir * rotationStep(fine));
+    if (supportsAutoWallSnap(item)) {
+      item.wallSnapOverride = true;
+      detachFromSnappedWall(item, old.snappedWall, old.rotation, item.rotation);
+      item.snappedWall = null;
+    }
     if (validateFloorItem(item).hard) {
-      item.rotation = old;
+      Object.assign(item, old);
       toast("Rotation would create an impossible overlap");
     }
+    item.group.position.set(item.x, 0, item.z);
     item.group.rotation.y = THREE.MathUtils.degToRad(item.rotation);
   }
   updateSelectedPanel();
@@ -2228,6 +2417,35 @@ function rotateSelectedItem(dir, fine = false) {
   refreshMoveBanner();
   requestRender(true, 2);
 }
+function toggleActiveWallSnap() {
+  const item = pendingPlacement?.item || selectedPlacedItem;
+  if (!supportsAutoWallSnap(item)) {
+    toast("Wall snap is available for wardrobes");
+    return;
+  }
+  item.wallSnapOverride = !item.wallSnapOverride;
+  if (!item.wallSnapOverride && Number.isFinite(item.x) && Number.isFinite(item.z)) {
+    const old = { x: item.x, z: item.z, rotation: item.rotation, snappedWall: item.snappedWall };
+    applyFloorItemPosition(item, item.x, item.z, true);
+    if (!pendingPlacement && validateFloorItem(item).hard) {
+      Object.assign(item, old);
+      item.group.position.set(item.x, 0, item.z);
+      item.group.rotation.y = THREE.MathUtils.degToRad(item.rotation);
+    }
+  } else if (item.wallSnapOverride) {
+    item.snappedWall = null;
+  }
+  if (pendingPlacement?.hasPosition) {
+    const v = itemValidation(item);
+    setGhostAppearance(!v.hard, v.message);
+  } else {
+    updateSelectedPanel();
+    refreshMoveBanner();
+    requestRender(true, 2);
+  }
+  toast(item.wallSnapOverride ? "Manual wardrobe rotation enabled" : "Automatic wardrobe wall snap enabled");
+}
+
 function snapActiveRotation() {
   if (pendingPlacement) {
     const item = pendingPlacement.item;
@@ -2292,7 +2510,16 @@ function placementPointerDown(e) {
       return;
     }
     dragTarget = item;
-    itemDragState = { x: item.x, z: item.z, lastX: item.x, lastZ: item.z };
+    itemDragState = {
+      x: item.x,
+      z: item.z,
+      rotation: item.rotation,
+      snappedWall: item.snappedWall,
+      lastX: item.x,
+      lastZ: item.z,
+      lastRotation: item.rotation,
+      lastSnappedWall: item.snappedWall,
+    };
     if (raycaster.ray.intersectPlane(dragPlane, dragPoint))
       dragOffset.set(item.x - dragPoint.x, 0, item.z - dragPoint.z);
   } else {
@@ -2314,20 +2541,20 @@ function placementPointerMove(e) {
   pointerNDC(e);
   raycaster.setFromCamera(pointer, camera);
   if (!raycaster.ray.intersectPlane(dragPlane, dragPoint)) return;
-  const x = snapValue(dragPoint.x + dragOffset.x),
-    z = snapValue(dragPoint.z + dragOffset.z);
+  const x = dragPoint.x + dragOffset.x,
+    z = dragPoint.z + dragOffset.z;
   if (dragTarget === "bed") {
-    state.x = x;
-    state.z = z;
+    state.x = snapValue(x);
+    state.z = snapValue(z);
     applyBedTransform();
   } else {
-    dragTarget.x = x;
-    dragTarget.z = z;
-    dragTarget.group.position.set(x, 0, z);
+    applyFloorItemPosition(dragTarget, x, z, true);
     const v = validateFloorItem(dragTarget);
     if (!v.hard) {
-      itemDragState.lastX = x;
-      itemDragState.lastZ = z;
+      itemDragState.lastX = dragTarget.x;
+      itemDragState.lastZ = dragTarget.z;
+      itemDragState.lastRotation = dragTarget.rotation;
+      itemDragState.lastSnappedWall = dragTarget.snappedWall;
     }
     recolourItem(dragTarget, v.hard ? "error" : "selected");
     updateSelectedPanel();
@@ -2340,7 +2567,10 @@ function finishPlacementDrag(e) {
     if (v.hard) {
       dragTarget.x = itemDragState.lastX;
       dragTarget.z = itemDragState.lastZ;
+      dragTarget.rotation = itemDragState.lastRotation;
+      dragTarget.snappedWall = itemDragState.lastSnappedWall;
       dragTarget.group.position.set(dragTarget.x, 0, dragTarget.z);
+      dragTarget.group.rotation.y = THREE.MathUtils.degToRad(dragTarget.rotation);
       toast(v.message);
     } else if (v.warning) toast(v.message);
   }
@@ -2554,14 +2784,37 @@ for (const [id, key] of [
 ])
   document.getElementById(id).addEventListener("change", (e) => {
     if (!selectedPlacedItem || selectedPlacedItem.mount !== "floor") return;
-    const old = selectedPlacedItem[key];
-    selectedPlacedItem[key] = Number(e.target.value) || 0;
-    if (key !== "rotation")
-      selectedPlacedItem[key] = snapValue(selectedPlacedItem[key]);
-    else selectedPlacedItem[key] = normalizeAngle(selectedPlacedItem[key]);
+    const old = {
+      x: selectedPlacedItem.x,
+      z: selectedPlacedItem.z,
+      rotation: selectedPlacedItem.rotation,
+      snappedWall: selectedPlacedItem.snappedWall,
+      wallSnapOverride: selectedPlacedItem.wallSnapOverride,
+    };
+    const value = Number(e.target.value) || 0;
+    if (key === "rotation") {
+      selectedPlacedItem.rotation = normalizeAngle(value);
+      if (supportsAutoWallSnap(selectedPlacedItem)) {
+        selectedPlacedItem.wallSnapOverride = true;
+        detachFromSnappedWall(
+          selectedPlacedItem,
+          old.snappedWall,
+          old.rotation,
+          selectedPlacedItem.rotation,
+        );
+        selectedPlacedItem.snappedWall = null;
+      }
+    } else {
+      applyFloorItemPosition(
+        selectedPlacedItem,
+        key === "x" ? value : selectedPlacedItem.x,
+        key === "z" ? value : selectedPlacedItem.z,
+        true,
+      );
+    }
     const v = validateFloorItem(selectedPlacedItem);
     if (v.hard) {
-      selectedPlacedItem[key] = old;
+      Object.assign(selectedPlacedItem, old);
       toast(v.message);
     }
     selectedPlacedItem.group.position.set(
@@ -2640,6 +2893,7 @@ document.getElementById("itemRotateFineLeft").onclick = () =>
   rotateSelectedItem(-1, true);
 document.getElementById("itemRotateFineRight").onclick = () =>
   rotateSelectedItem(1, true);
+document.getElementById("itemWallSnapToggle").onclick = toggleActiveWallSnap;
 document.getElementById("itemDelete").onclick = removeSelectedItem;
 document.getElementById("itemDeleteWall").onclick = removeSelectedItem;
 
@@ -2672,6 +2926,10 @@ document.addEventListener("keydown", (e) => {
     case "r":
     case "R":
       snapActiveRotation();
+      break;
+    case "w":
+    case "W":
+      toggleActiveWallSnap();
       break;
     case "Enter":
       if (pendingPlacement) confirmPendingPlacement();
@@ -2919,7 +3177,15 @@ function serializePlanner() {
     fov: camera.fov,
     items: placedItems.map((i) =>
       i.mount === "floor"
-        ? { key: i.key, mount: i.mount, x: i.x, z: i.z, rotation: i.rotation }
+        ? {
+            key: i.key,
+            mount: i.mount,
+            x: i.x,
+            z: i.z,
+            rotation: i.rotation,
+            wallSnapOverride: !!i.wallSnapOverride,
+            snappedWall: i.snappedWall || null,
+          }
         : {
             key: i.key,
             mount: i.mount,
@@ -2971,6 +3237,9 @@ function rebuildItems(items) {
         d: def.d,
         h: def.h,
         rotation: saved.rotation || 0,
+        autoWallSnap: !!def.autoWallSnap,
+        wallSnapOverride: !!saved.wallSnapOverride,
+        snappedWall: saved.snappedWall || null,
         group,
       };
     group.userData.itemRef = item;
@@ -3097,7 +3366,7 @@ const coachSteps = [
   },
   {
     title: "Add planning furniture",
-    copy: "Choose an item, move its luminous green ghost, rotate in 90° steps or 5° fine steps and click to place. Red means the position is blocked.",
+    copy: "Choose an item, move its luminous green ghost and click to place. Wardrobes align to nearby walls automatically; rotate manually to override. Red means the position is blocked.",
     target: "libraryToggle",
   },
 ];
@@ -3124,7 +3393,7 @@ function closeCoach() {
     .querySelectorAll(".coach-highlight")
     .forEach((e) => e.classList.remove("coach-highlight"));
   try {
-    localStorage.setItem("bedroomPlannerV203Tour", "done");
+    localStorage.setItem("bedroomPlannerV204Tour", "done");
   } catch (e) {}
 }
 document.getElementById("coachNext").onclick = () =>
@@ -3164,14 +3433,14 @@ setTimeout(() => {
   commitHistory();
   let done = false;
   try {
-    done = localStorage.getItem("bedroomPlannerV203Tour") === "done";
+    done = localStorage.getItem("bedroomPlannerV204Tour") === "done";
   } catch (e) {}
   if (!done) setTimeout(() => showCoach(0), 380);
 }, 350);
 
 
 window.BedroomPlannerDiagnostics = {
-  version: "2.03",
+  version: "2.04",
   renderer,
   scene,
   camera,

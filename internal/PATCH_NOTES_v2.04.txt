@@ -1,0 +1,71 @@
+BEDROOM ROOM PLANNER v2.04 — INTERNAL PATCH NOTES
+=================================================
+
+BASELINE
+--------
+Source: Bedroom Room Planner v2.03 complete replacement repository.
+The completed v2.03 wall rendering, performance scheduler, object rotation, deletion and Dimplex Quantum fixes are preserved.
+
+IDANÄS WARDROBE
+----------------
+- Added IKEA IDANÄS wardrobe article 604.588.35.
+- Published outer dimensions are represented exactly: 121 cm wide, 59 cm deep and 211 cm high.
+- Added a dedicated closed-door model rather than reusing a generic wardrobe block.
+- Model includes:
+  - full-size top cap
+  - side carcass panels and back panel
+  - lower frame and four feet
+  - four folding-door leaves
+  - recessed front panels and raised rails
+  - four small front knobs
+- All model parts remain inside the exact 121 × 59 × 211 cm planning volume.
+- Door opening is not animated because the current request concerns floor planning and wall placement.
+- Added the official IKEA product page to the furniture catalogue, source CSV and public README.
+
+AUTOMATIC WARDROBE WALL SNAP
+----------------------------
+- Added automatic wall alignment to IDANÄS, PAX and BRIMNES wardrobes.
+- Snapping is based on the measured six-segment room polygon rather than an axis-aligned room box.
+- Each wall has an explicit inward-facing wardrobe rotation:
+  Wall 1: 0°
+  Wall 2: -90°
+  Wall 3: 0°
+  Wall 4: -90°
+  Wall 5: 180°
+  Wall 6: 90°
+- The wardrobe centre is positioned using half its depth plus a 0.8 cm planning gap, so its back sits flush without intersecting the wall.
+- Along-wall placement is clamped so the entire wardrobe width remains on the selected wall segment.
+- Wall segments too short for a wardrobe are rejected as snap candidates.
+- The nearest valid wall candidate is selected within a 38 cm centre-distance threshold.
+
+MANUAL OVERRIDE
+---------------
+- Q/E, Shift+Q/E and exact numeric rotation switch a wardrobe to manual wall-snap override.
+- If the wardrobe was already flush to a wall, manual rotation shifts it inward by the additional rotated wall-normal extent before collision validation.
+- This prevents the new orientation being immediately forced back to the wall-aligned angle.
+- W or the visible wall-snap button restores automatic alignment.
+- The active wall-snap state is displayed in both the selection banner and the Selected object panel.
+
+STATE AND INTERACTION
+---------------------
+- Pending placement, selected-item dragging and arrow-key nudging share the same wall-snap positioning function.
+- Drag rollback now restores position, rotation and snapped-wall state together.
+- Wall-snap override and snapped-wall identity are included in history serialisation and restoration.
+- Existing non-wardrobe furniture movement is unchanged.
+
+PUBLIC INTERFACE
+----------------
+- Added a featured IDANÄS card to Add furniture.
+- Added a direct IKEA product link.
+- Added visible wall-snap status and control for compatible selected objects.
+- Added W to the complete keyboard-controls list.
+- Updated help copy to explain automatic alignment and manual override.
+
+VERSIONING AND CACHE
+--------------------
+- Updated public/runtime version to 2.04.
+- Updated app-shell asset query strings to ?v=2.04.
+- Updated service-worker registration to service-worker.js?v=2.04.
+- Updated cache name to bedroom-room-planner-v2-04.
+- Updated PWA start URL and icon queries.
+- Older planner caches continue to be deleted during service-worker activation.
