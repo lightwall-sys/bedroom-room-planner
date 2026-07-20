@@ -1,10 +1,22 @@
-DUMMY ITEMS AND LIGHT FITTINGS
-==============================
+PRODUCT AND FINISH SOURCE RECORDS
+=================================
 
-Everything represented here is a simplified planning proxy included in the planner project. These files document what each proxy is based on. They are not downloadable or official manufacturer models.
+The models and finishes in this directory are responsive browser-planning approximations. They are not official manufacturer CAD files and are not intended for fabrication or installation work.
 
-Dimensions and public product pages were checked on 20 July 2026. Product availability, specifications and safety guidance can change. Always verify against the current manufacturer page before purchase or installation.
+The v2.05 product models marked as exact preserve the published outer planning envelope. Decorative construction, internal fittings, opening mechanisms, grain and glass behaviour are simplified where necessary for stable real-time rendering.
 
-Wall-mounted items use a separate placement system and cannot be attached to furniture. Floor items are checked against the room, bed, door swing and other placed objects.
+Source records:
+- product-sources.csv: movable furniture, wall storage and lamps
+- lighting-sources.csv: fixed and movable light fittings
+- flooring-sources.csv: Quick-Step planning finishes and plank proportions
+- paint-sources.csv: accent-paint references
+- fixed-room-items.csv: measured or identified fixed room fixtures
 
-The IDANÄS wardrobe proxy uses the exact published 121 × 59 × 211 cm outer dimensions. Its closed-door detailing is simplified and the folding-door movement is not animated.
+Product availability, dimensions, colours and safety instructions can change. Verify current seller information before purchase, wall mounting or installation.
+
+Placement types:
+- Floor items sit on the room floor and use floor collision checks.
+- Wall items mount to a specific wall and use wall/opening collision checks.
+- Surface items attach to compatible placed furniture and move with that support.
+
+Wardrobes can align their backs to nearby walls. Compatible EKET cabinets can join into relative modular arrangements. These behaviours are planning aids and do not replace wall-fixing, clearance or installation guidance.

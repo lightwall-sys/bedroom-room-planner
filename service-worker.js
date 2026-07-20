@@ -1,18 +1,18 @@
 const CACHE_PREFIX = "bedroom-room-planner-";
-const CACHE_NAME = "bedroom-room-planner-v2-04";
-const ASSET_VERSION = "2.04";
+const CACHE_NAME = "bedroom-room-planner-v2-05";
+const ASSET_VERSION = "2.05";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./manifest.webmanifest?v=2.04",
-  "./assets/css/app.css?v=2.04",
-  "./assets/js/vendor/three.min.js?v=2.04",
-  "./assets/js/vendor/OrbitControls.js?v=2.04",
-  "./assets/js/model-data.js?v=2.04",
-  "./assets/js/app.js?v=2.04",
-  "./assets/js/pwa.js?v=2.04",
-  "./assets/icons/icon-192.png?v=2.04",
-  "./assets/icons/icon-512.png?v=2.04"
+  "./manifest.webmanifest?v=2.05",
+  "./assets/css/app.css?v=2.05",
+  "./assets/js/vendor/three.min.js?v=2.05",
+  "./assets/js/vendor/OrbitControls.js?v=2.05",
+  "./assets/js/model-data.js?v=2.05",
+  "./assets/js/app.js?v=2.05",
+  "./assets/js/pwa.js?v=2.05",
+  "./assets/icons/icon-192.png?v=2.05",
+  "./assets/icons/icon-512.png?v=2.05"
 ];
 
 async function precacheAppShell() {

@@ -1,0 +1,71 @@
+BEDROOM ROOM PLANNER v2.05 - PATCH NOTES
+=========================================
+
+Release scope
+-------------
+This release expands the planner from a small furniture demonstrator into a fuller room-layout workflow while preserving the v2.03/v2.04 camera scheduler and wall-stripe fix.
+
+Room shell and lighting
+-----------------------
+- Rebuilt the visible room shell from non-overlapping procedural wall faces.
+- Added cleaner wall returns, doorway/window reveals, skirting and coving junctions.
+- Kept visible wall faces out of shadow-map self-casting to prevent the former stepped stripe artefact.
+- Added separate window-wall light blockers so furniture and fixed geometry can obstruct daylight without reintroducing wall self-shadowing.
+- Added daylight and evening comparison scenes.
+- Added warm point lights to placed lamps, with shadow casting limited to the nearest two active lamp lights.
+- Refined the heater cable trunking and made the two wall switches more cuboid.
+
+Product library
+---------------
+- Added dimension-matched models for IKEA HEMNES 802.426.27 and SONGESAND 303.674.41.
+- Added IKEA EKET 795.330.19 glass-door cabinet, 693.293.87 two-drawer cabinet and 005.745.88 door-and-shelf cabinet.
+- Added IKEA FADO 100.963.75 and ARSTID 603.213.76 table lamps.
+- Added IKEA RODFLIK 805.619.40 and LAUTERS 404.050.46 floor lamps.
+- Refined IDANAS black hardware and door detailing while retaining its 121 x 59 x 211 cm planning envelope.
+- Added seller-referenced colour variants before and after placement.
+- Added selectable SONGESAND left/right door hinging.
+- Added a transparent tempered-glass planning material for the EKET glass door.
+
+Placement and editing
+---------------------
+- Added automatic modular joining for compatible EKET cabinets.
+- Added a visible EKET free-positioning/modular-joining control and W shortcut.
+- Added surface placement for table lamps on supported furniture.
+- Surface lamps remain attached when the supporting furniture moves.
+- Added support-deletion confirmation for furniture carrying lamps.
+- Added camera-relative floor-object arrow movement.
+- Wall-object arrow controls move along the wall or change mounting height.
+- Surface-object arrow controls move within the supporting tabletop.
+- Added Duplicate, Lock, Delete and relevant colour/variant controls to the selected-item workflow.
+- Duplicate placement chooses a sensible adjacent location or returns to placement mode when no valid location exists.
+- Added clearance overlays and selected-object wall/furniture measurements.
+
+Flooring
+--------
+- Replaced the previous floor choices with Quick-Step Cotton Oak White Blush and Coast Oak Sand.
+- Generated local seamless planning textures using the published plank proportions.
+- Added a 90-degree plank-direction control.
+
+Saving, export and presentation
+-------------------------------
+- Added automatic local recovery.
+- Added three named local layout slots.
+- Added portable JSON export/import.
+- Added current-view and plan-view PNG capture.
+- Added Clear room view, with a persistent Show controls return action.
+
+Interface
+---------
+- Reorganised the furniture catalogue into searchable groups.
+- Added colour swatches to product cards.
+- Added title/tool-tip guidance and visible shortcut badges to relevant controls.
+- Expanded the essential and complete controls references.
+- Added contextual controls that only appear when supported by the selected item.
+
+Caching and release
+-------------------
+- Updated all runtime asset query strings to v2.05.
+- Updated the service-worker cache to bedroom-room-planner-v2-05.
+- Older Bedroom Room Planner caches are removed during service-worker activation.
+- Updated the public README and product/finish source records.
+- Removed the obsolete manual GitHub-upload instruction document from the repository.

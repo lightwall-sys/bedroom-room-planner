@@ -1,82 +1,89 @@
 # Bedroom Room Planner
 
-Bedroom Room Planner is a browser-based 3D tool for testing a measured bedroom layout, arranging furniture and comparing paint, flooring and lighting choices.
+Bedroom Room Planner is a browser-based 3D planning tool for arranging furniture inside a measured bedroom and comparing paint, flooring and lighting choices.
 
 ## Open the planner
 
 **[Launch Bedroom Room Planner](https://lightwall-sys.github.io/bedroom-room-planner/)**
 
-The hosted version runs directly in a modern desktop browser. JavaScript and WebGL must be enabled.
+The hosted version runs in a modern desktop browser. JavaScript and WebGL must be enabled.
 
 ## Current release
 
-**v2.04** adds the selected IKEA IDANÄS folding-door wardrobe and introduces Sims-style wall alignment for wardrobes.
+**v2.05** expands the product library, introduces modular wall storage and surface-mounted lamps and adds a more complete layout workflow.
 
-- IDANÄS wardrobe with exact **121 × 59 × 211 cm** outer dimensions
-- Recognisable closed-door model with four folding-door leaves, panel detailing, handles, frame and legs
-- Automatic wardrobe wall snapping that aligns the back of the object flush to a nearby wall
-- Correct inward-facing orientation for all six room walls
-- Manual rotation automatically overrides wall snapping
-- A visible **Wall snap** control and `W` keyboard shortcut restore or disable automatic alignment
-- Existing `Q` / `E` 90° rotation and `Shift` + `Q` / `Shift` + `E` 5° fine rotation remain available
-- Wall-snap state is retained in undo, redo and restored planner states
+### Product library
 
-The IDANÄS model is a dimensionally exact planning proxy rather than a manufacturing CAD model. Product reference: [IKEA IDANÄS wardrobe, article 604.588.35](https://www.ikea.com/gb/en/p/idanaes-wardrobe-white-60458835/).
+The planner includes dimension-matched planning models for:
+
+- IKEA IDANÄS folding-door wardrobe
+- IKEA EKET glass-door wall cabinet
+- IKEA EKET two-drawer wall cabinet
+- IKEA EKET cabinet with door and shelf
+- IKEA HEMNES two-drawer chest
+- IKEA SONGESAND bedside table
+- IKEA FADO and ÅRSTID table lamps
+- IKEA RÖDFLIK and LAUTERS floor lamps
+
+Seller colour options can be selected before placement and changed after placement. Models use the published outer dimensions recorded in `dummy-items/product-sources.csv`. Decorative details are simplified for responsive browser rendering.
+
+### Placement and editing
+
+- Wardrobes align their backs to nearby walls automatically
+- Compatible EKET cabinets join alongside or above one another as modular wall storage
+- Table lamps attach to suitable furniture surfaces and move with the supporting item
+- Camera-relative arrow movement follows the current view
+- Objects can be duplicated, locked, recoloured, rotated, nudged or deleted
+- Clearance overlays and live measurements can be shown when needed
+
+### Room and presentation tools
+
+- Refined non-overlapping wall, reveal, skirting and coving geometry
+- Quick-Step Cotton Oak White Blush and Coast Oak Sand planning finishes
+- Rotatable real-proportion flooring planks
+- Daylight and evening lighting comparisons
+- Furniture shadows that respond to the window and placed lamps
+- Three named local save slots plus automatic recovery
+- JSON layout export and import
+- Current-view and plan-view PNG capture
+- **Clear room view** mode for an unobstructed presentation
 
 ## Main controls
 
-| Action | Mouse or keyboard |
+| Action | Control |
 | --- | --- |
-| Orbit camera | Left-drag empty space |
-| Pan camera | Right-drag empty space |
+| Orbit camera | Left-drag empty room space |
+| Pan camera | Right-drag empty room space |
 | Zoom | Mouse wheel |
-| Toggle Move objects | `P` |
-| Move selected furniture | Left-drag, or arrow keys |
+| Toggle object editing | `P` |
+| Move selected object relative to the camera | Arrow keys |
 | Fine nudge | `Shift` + arrow keys |
 | Rotate left or right by 90° | `Q` / `E` |
 | Fine rotate left or right by 5° | `Shift` + `Q` / `Shift` + `E` |
-| Snap angle to nearest 90° | `R` |
-| Toggle wardrobe auto wall snap | `W` |
-| Delete selected furniture | `Delete` or `Backspace` |
+| Snap angle to the nearest 90° | `R` |
+| Toggle automatic wall alignment or EKET modular joining | `W` |
+| Duplicate selected object | `Ctrl`/`Cmd` + `D` |
+| Lock or unlock selected object | `K` |
+| Switch selected lamp on or off | `B` |
+| Delete selected object | `Delete` or `Backspace` |
+| Open saved layouts | `Ctrl`/`Cmd` + `S` |
+| Enter clear room view | `H` |
 | Confirm or cancel placement | `Enter` / `Esc` |
-| Open the complete controls list | `?` or the **Controls** button |
+| Open the complete controls list | `?` or **Controls** |
 
-### Wardrobe wall snapping
+The interface also exposes the relevant actions as labelled buttons, so keyboard shortcuts are optional.
 
-Wardrobes begin with automatic wall snapping enabled. Move one near a wall and its back aligns flush to that wall, with the front facing into the room.
+## Saving and privacy
 
-Rotating a wardrobe manually with `Q`, `E`, the fine-rotation controls or an exact angle switches that object to manual mode. Press `W` or use the visible wall-snap button to restore automatic alignment.
-
-## Features
-
-- Measured room geometry with automatic directional cutaway walls
-- Design, doorway and plan camera views
-- Bed-wall presets and exact bed controls
-- Furniture planning library with placement and collision checks
-- Visible placement ghost with valid and blocked states
-- Contextual move, rotate, fine-rotate, wall-snap and delete controls
-- Paint, accent-wall and flooring controls
-- Time-of-day, daylight and overhead-light controls
-- Undo and redo history
-- Installable Progressive Web App support on compatible browsers
-- Offline app shell after a successful first visit
-- Visible startup diagnostics if the planner cannot initialise
+Saved layouts and automatic recovery data remain in the current browser on the current device. The JSON export option creates a portable local file. The planner does not require an account or transmit a saved layout to a server.
 
 ## Planning accuracy
 
-Furniture and fixed-room objects are planning proxies. Recorded dimensions and source links are stored in `dummy-items/`. The IDANÄS wardrobe uses IKEA's exact published outer dimensions. Decorative construction is simplified for responsive browser rendering.
+The room shell is based on recorded measurements. Furniture and fixtures are planning models rather than manufacturing CAD. Product dimensions, source pages and modelling qualifications are kept in `dummy-items/`.
 
 ## Run locally
 
-For a basic local preview, extract the repository and open `index.html`.
-
-Browser installation and offline caching require the project to be served over HTTPS, such as through GitHub Pages.
-
-## Publish with GitHub Pages
-
-The repository is designed to be uploaded as a static GitHub Pages project. `index.html` must remain at the repository root.
-
-See [`GITHUB_UPLOAD_INSTRUCTIONS_v2.04.txt`](GITHUB_UPLOAD_INSTRUCTIONS_v2.04.txt) for the exact manual replacement and deployment steps.
+Extract the repository and open `index.html` for a basic preview. Installation and offline caching require HTTPS, such as a GitHub Pages deployment.
 
 ## Project structure
 
@@ -87,10 +94,10 @@ service-worker.js          Versioned offline cache
 assets/css/                Planner styles
 assets/js/                 Three.js, controls, model data and planner logic
 assets/icons/              PWA icons
-dummy-items/               Planning-item and source records
+dummy-items/               Product, finish and source records
 internal/                  Internal release and maintenance notes
 ```
 
 ## Browser requirements
 
-The planner requires JavaScript and WebGL. If a required file fails to load or startup does not complete, the loading screen is replaced with a visible error panel and technical details rather than remaining indefinitely.
+The planner requires JavaScript and WebGL. If a required file fails to load or startup cannot complete, the loading screen is replaced by a visible error panel with technical details.
