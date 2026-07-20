@@ -741,7 +741,7 @@ canvas {
   }
 }
 
-/* inherited planner controls, retained in v2.01 */
+/* inherited planner controls, retained in v2.02 */
 .mode-btn.active {
   background: #5d514b;
   color: #fff;
@@ -949,7 +949,7 @@ body.placement-mode canvas:active {
   }
 }
 
-/* v2.01 task-led interface */
+/* v2.02 task-led interface */
 :root {
   --panel-strong: rgba(250, 248, 245, 0.97);
   --panel-soft: rgba(250, 248, 245, 0.88);
@@ -1632,7 +1632,7 @@ body:not(.placement-mode) canvas:active {
   }
 }
 
-/* v2.01 placement ghost and fixed-heater refinement */
+/* v2.02 placement ghost and fixed-heater refinement */
 body.placing-new-item canvas {
   cursor: crosshair !important;
 }
@@ -1670,7 +1670,7 @@ body.placing-new-item canvas {
 }
 
 
-/* v2.01 performance-first compositing */
+/* v2.02 performance-first compositing */
 .glass{
   background:rgba(250,248,245,.975) !important;
   backdrop-filter:none !important;
@@ -1682,3 +1682,57 @@ body.is-interacting .glass{box-shadow:0 8px 24px rgba(56,47,43,.11) !important}
 .install-control.ready{background:#3e5f49;color:#fff;border-color:#3e5f49}
 .app-status-card .status-line{margin-top:7px}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto !important;animation-duration:.001ms !important;transition-duration:.001ms !important}}
+
+
+/* v2.02 contextual rotation controls and stable camera interaction */
+.mode-banner.has-actions {
+  max-width: min(760px, calc(100vw - 36px));
+  border-radius: 18px;
+  pointer-events: auto;
+}
+.mode-banner-copy {
+  min-width: 0;
+  line-height: 1.35;
+}
+.mode-banner-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 6px;
+  margin-left: 2px;
+}
+.mode-banner-actions button {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  background: rgba(255, 255, 255, 0.13);
+  color: #fff;
+  border-radius: 999px;
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.mode-banner-actions button:hover,
+.mode-banner-actions button:focus-visible {
+  background: rgba(255, 255, 255, 0.24);
+  border-color: rgba(255, 255, 255, 0.48);
+  outline: none;
+}
+.mode-banner-actions button:active {
+  transform: translateY(1px);
+}
+@media (max-width: 680px) {
+  .mode-banner.has-actions {
+    align-items: flex-start;
+    border-radius: 16px;
+    flex-wrap: wrap;
+  }
+  .mode-banner.has-actions .mode-banner-copy {
+    flex: 1 1 calc(100% - 28px);
+  }
+  .mode-banner-actions {
+    width: 100%;
+    margin-left: 18px;
+  }
+}

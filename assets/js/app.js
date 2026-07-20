@@ -146,11 +146,15 @@ function baseMaterial(i) {
   const base = new THREE.Color(C[i.color_key] || "#eee");
   const p = { color: base.clone(), roughness: 0.84, metalness: 0 };
   if (i.category === "wall") {
+    // Deliberately plain paint: no generated texture, low specular response and
+    // material dithering to avoid visible colour steps on large flat surfaces.
     p.color = new THREE.Color(C.wall_white);
     p.roughness = 1;
+    p.metalness = 0;
     p.side = THREE.DoubleSide;
     p.emissive = new THREE.Color(C.wall_white);
-    p.emissiveIntensity = 0.018;
+    p.emissiveIntensity = 0.022;
+    p.dithering = true;
   }
   if (i.category === "trim" || i.category === "fixture") p.roughness = 0.76;
   if (i.category === "detail") {
@@ -176,6 +180,11 @@ function baseMaterial(i) {
     p.roughness = 1;
   }
   const m = new THREE.MeshStandardMaterial(p);
+  if (i.category === "wall") {
+    // Render both faces for cutaway viewing, but use one controlled face when
+    // writing the shadow map. This prevents double-sided self-shadow striping.
+    m.shadowSide = THREE.FrontSide;
+  }
   if (i.category !== "wall") materialCache[k] = m;
   return m;
 }
@@ -530,7 +539,8 @@ daylight.castShadow = true;
 daylight.shadow.mapSize.set(2048, 2048);
 daylight.shadow.camera.near = 20;
 daylight.shadow.camera.far = 980;
-daylight.shadow.bias = -0.00025;
+daylight.shadow.bias = 0.00018;
+daylight.shadow.normalBias = 0.55;
 scene.add(daylight, daylight.target);
 const overheadLight = new THREE.SpotLight(
   0xffc982,
@@ -546,7 +556,8 @@ overheadLight.castShadow = true;
 overheadLight.shadow.mapSize.set(1024, 1024);
 overheadLight.shadow.camera.near = 5;
 overheadLight.shadow.camera.far = 640;
-overheadLight.shadow.bias = -0.0003;
+overheadLight.shadow.bias = 0.00022;
+overheadLight.shadow.normalBias = 0.48;
 scene.add(overheadLight, overheadLight.target);
 const ceilingBlocker = new THREE.Mesh(
   new THREE.BoxGeometry(D.W5 + 36, 5, D.W6 + 36),
@@ -930,53 +941,62 @@ roomGroup.traverse((m) => {
   if (n) wallSections[n].push(m);
 });
 wallSections[6].push(outside);
-let lastCutawayKey = "";
+let lastCutawayKey = "",
+  lastCutawaySide = "w5";
+const cutawaySections = {
+  w1: [1],
+  w234: [2, 3, 4],
+  w5: [5],
+  w6: [6],
+};
+function directionalCutawaySide() {
+  // Use the camera-to-target direction rather than camera height. Looking down
+  // from above must never be interpreted as a request to remove every wall.
+  const dx = (camera.position.x - controls.target.x) / (D.W5 / 2),
+    dz = (camera.position.z - controls.target.z) / (D.W6 / 2),
+    ax = Math.abs(dx),
+    az = Math.abs(dz),
+    xSide = dx < 0 ? "w6" : "w234",
+    zSide = dz < 0 ? "w1" : "w5",
+    lastAxis = lastCutawaySide === "w6" || lastCutawaySide === "w234" ? "x" : "z",
+    axisHysteresis = 0.14,
+    signDeadZone = 0.055;
+
+  // Keep the current axis close to the diagonal boundary. This avoids walls
+  // flickering between adjacent sections while OrbitControls damping settles.
+  let axis;
+  if (lastAxis === "x" && ax + axisHysteresis >= az) axis = "x";
+  else if (lastAxis === "z" && az + axisHysteresis >= ax) axis = "z";
+  else axis = ax > az ? "x" : "z";
+
+  if (axis === "x") {
+    if (Math.abs(dx) < signDeadZone && lastAxis === "x") return lastCutawaySide;
+    return xSide;
+  }
+  if (Math.abs(dz) < signDeadZone && lastAxis === "z") return lastCutawaySide;
+  return zSide;
+}
 function hiddenWallsForCamera() {
-  if (
-    state.wallMode === "down" ||
-    currentView === "plan" ||
-    camera.position.y > D.H + 135
-  )
+  if (state.wallMode === "down" || currentView === "plan")
     return new Set([1, 2, 3, 4, 5, 6]);
   if (state.wallMode === "up") return new Set();
-  const hidden = new Set(),
-    m = 18,
-    x = camera.position.x,
-    z = camera.position.z;
-  if (z < -m) hidden.add(1);
-  if (z > D.W6 + m) hidden.add(5);
-  if (x < -m) hidden.add(6);
-  if (x > D.W5 + m) {
-    hidden.add(2);
-    hidden.add(3);
-    hidden.add(4);
-  }
-  if (!hidden.size) {
-    const cx = D.W5 / 2,
-      cz = D.W6 / 2,
-      dx = (x - cx) / (D.W5 / 2),
-      dz = (z - cz) / (D.W6 / 2);
-    if (Math.abs(dx) > Math.abs(dz)) {
-      if (dx < 0) hidden.add(6);
-      else {
-        hidden.add(2);
-        hidden.add(3);
-        hidden.add(4);
-      }
-    } else hidden.add(dz < 0 ? 1 : 5);
-  }
-  return hidden;
+  lastCutawaySide = directionalCutawaySide();
+  return new Set(cutawaySections[lastCutawaySide]);
 }
 function updateCutaway(force = false) {
   const hidden = hiddenWallsForCamera(),
     key =
       [...hidden].sort().join(",") + "|" + state.wallMode + "|" + currentView;
-  if (!force && key === lastCutawayKey) return;
+  if (!force && key === lastCutawayKey) return false;
   lastCutawayKey = key;
   for (let n = 1; n <= 6; n++) {
     const visible = !hidden.has(n);
     for (const m of wallSections[n]) m.visible = visible;
   }
+  // Wall sections cast shadows. Refresh once when the chosen section changes,
+  // not continuously while the camera moves.
+  shadowDirty = true;
+  return true;
 }
 function setWallMode(mode, announce = true) {
   state.wallMode = mode;
@@ -1277,6 +1297,62 @@ function pointerNDC(e) {
   pointer.y = -((e.clientY - r.top) / r.height) * 2 + 1;
 }
 
+function renderModeBanner({
+  show = false,
+  placing = false,
+  invalid = false,
+  title = "",
+  text = "",
+  rotate = false,
+  orientation = false,
+} = {}) {
+  const banner = document.getElementById("modeBanner");
+  banner.classList.toggle("show", show);
+  banner.classList.toggle("placing", placing);
+  banner.classList.toggle("invalid", invalid);
+  banner.classList.toggle("has-actions", rotate || orientation);
+  const actions = orientation
+    ? '<span class="mode-banner-actions"><button type="button" data-quick-rotate="1">↔ Switch orientation</button></span>'
+    : rotate
+      ? '<span class="mode-banner-actions"><button type="button" data-quick-rotate="-1">↺ Rotate left</button><button type="button" data-quick-rotate="1">Rotate right ↻</button></span>'
+      : "";
+  banner.innerHTML = `<i></i><span class="mode-banner-copy"><b>${title}</b> ${text}</span>${actions}`;
+  banner.querySelectorAll("[data-quick-rotate]").forEach((button) => {
+    button.addEventListener("pointerdown", (event) => event.stopPropagation());
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const direction = Number(button.dataset.quickRotate) || 1;
+      if (pendingPlacement) rotatePending(direction);
+      else rotateSelectedItem(direction);
+    });
+  });
+}
+function refreshMoveBanner() {
+  if (!placementMode) {
+    renderModeBanner();
+    return;
+  }
+  if (!selectedPlacedItem) {
+    renderModeBanner({
+      show: true,
+      title: "Move objects is on.",
+      text: "Click furniture to select it, then drag. Press Esc or P when finished.",
+    });
+    return;
+  }
+  const wallMounted = selectedPlacedItem.mount === "wall";
+  const detail = wallMounted
+    ? "Use Switch orientation here, or adjust its exact wall position in Add furniture."
+    : `Drag to move. Current angle ${normalizeAngle(selectedPlacedItem.rotation).toFixed(0)}°.`;
+  renderModeBanner({
+    show: true,
+    title: `${selectedPlacedItem.name} selected.`,
+    text: detail,
+    rotate: !wallMounted,
+    orientation: wallMounted,
+  });
+}
 function setPlacementMode(enabled, announce = true) {
   if (enabled && typeof pendingPlacement !== "undefined" && pendingPlacement)
     cancelPendingPlacement(false);
@@ -1289,11 +1365,7 @@ function setPlacementMode(enabled, announce = true) {
     ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 11V6a2 2 0 0 1 4 0v4-6a2 2 0 0 1 4 0v6-4a2 2 0 0 1 4 0v8c0 4.4-3.6 8-8 8h-1.2a7 7 0 0 1-5.7-2.9L2.8 16a2 2 0 0 1 3.1-2.5L8 16"/></svg><span class="label">Finish moving</span>'
     : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 11V6a2 2 0 0 1 4 0v4-6a2 2 0 0 1 4 0v6-4a2 2 0 0 1 4 0v8c0 4.4-3.6 8-8 8h-1.2a7 7 0 0 1-5.7-2.9L2.8 16a2 2 0 0 1 3.1-2.5L8 16"/></svg><span class="label">Move objects</span>';
   document.getElementById("placementModeSwitch").checked = placementMode;
-  const modeBanner = document.getElementById("modeBanner");
-  modeBanner.classList.remove("placing", "invalid");
-  modeBanner.innerHTML =
-    "<i></i><span><b>Move objects is on.</b> Click furniture to select it, then drag. Press Esc or P when finished.</span>";
-  modeBanner.classList.toggle("show", placementMode);
+  refreshMoveBanner();
   document
     .getElementById("placementHint")
     .classList.toggle("show", placementMode);
@@ -1731,6 +1803,7 @@ function selectPlacedItem(item) {
   updateSelectionHighlight(item ? item.group : null);
   updateSelectedPanel();
   updatePlacedList();
+  if (placementMode) refreshMoveBanner();
 }
 function findSpawn(item) {
   const candidates = [
@@ -1760,10 +1833,16 @@ function disposeGroup(group) {
   });
 }
 function ghostMessage(text, invalid = false) {
-  const banner = document.getElementById("modeBanner");
-  banner.classList.add("show", "placing");
-  banner.classList.toggle("invalid", invalid);
-  banner.innerHTML = `<i></i><span><b>${pendingPlacement?.item?.name || "Place item"}.</b> ${text}</span>`;
+  const item = pendingPlacement?.item;
+  renderModeBanner({
+    show: true,
+    placing: true,
+    invalid,
+    title: `${item?.name || "Place item"}.`,
+    text,
+    rotate: item?.mount !== "wall",
+    orientation: item?.mount === "wall",
+  });
 }
 function setGhostAppearance(valid, message) {
   if (!pendingPlacement) return;
@@ -1776,7 +1855,7 @@ function setGhostAppearance(valid, message) {
   pendingPlacement.outline.material.color.setHex(colour);
   pendingPlacement.outline.setFromObject(pendingPlacement.group);
   ghostMessage(
-    valid ? "Click to place · Q/E or R rotates · Esc cancels" : message,
+    valid ? "Rotate here if needed, then click to place · Esc cancels" : message,
     !valid,
   );
   requestRender(false, 1);
@@ -1859,8 +1938,6 @@ function cancelPendingPlacement(announce = true) {
   pendingPlacement.outline.material?.dispose();
   pendingPlacement = null;
   document.body.classList.remove("placing-new-item");
-  const banner = document.getElementById("modeBanner");
-  banner.classList.remove("placing", "invalid");
   setPlacementMode(placementMode, false);
   if (announce) toast("Placement cancelled");
   requestRender(false, 1);
@@ -2028,6 +2105,7 @@ function removeSelectedItem() {
   selectedPlacedItem = null;
   updateSelectedPanel();
   updatePlacedList();
+  refreshMoveBanner();
   toast(`${item.name} removed`);
 }
 function moveSelectedItem(dx, dz) {
@@ -2076,6 +2154,7 @@ function rotateSelectedItem(dir) {
   }
   updateSelectedPanel();
   updatePlacedList();
+  refreshMoveBanner();
 }
 function activeNudge(dx, dz) {
   if (placementMode && selectedPlacedItem) moveSelectedItem(dx, dz);
@@ -2556,27 +2635,35 @@ document.addEventListener("keydown", (e) => {
 });
 
 let renderQueued = false,
+  renderInProgress = false,
   settleFrames = 0,
   shadowDirty = true,
-  interactionTimer = 0;
+  interactionTimer = 0,
+  scheduledRenderFrames = 0,
+  completedRenderFrames = 0;
+function scheduleRenderFrame() {
+  if (renderQueued || renderInProgress) return;
+  renderQueued = true;
+  scheduledRenderFrames++;
+  requestAnimationFrame(renderFrame);
+}
 function requestRender(shadows = false, frames = 1) {
   if (shadows) shadowDirty = true;
   settleFrames = Math.max(settleFrames, Math.max(0, frames));
-  if (!renderQueued) {
-    renderQueued = true;
-    requestAnimationFrame(renderFrame);
-  }
+  scheduleRenderFrame();
 }
 function renderFrame() {
   renderQueued = false;
+  renderInProgress = true;
   const changed = controls.enableDamping ? controls.update() : false;
   if (shadowDirty) renderer.shadowMap.needsUpdate = true;
   renderScene();
+  completedRenderFrames++;
   shadowDirty = false;
-  if (changed || settleFrames-- > 0) {
-    renderQueued = true;
-    requestAnimationFrame(renderFrame);
-  }
+  if (settleFrames > 0) settleFrames--;
+  const needsAnotherFrame = changed || settleFrames > 0;
+  renderInProgress = false;
+  if (needsAnotherFrame) scheduleRenderFrame();
 }
 function beginInteraction() {
   clearTimeout(interactionTimer);
@@ -2923,7 +3010,7 @@ function closeCoach() {
     .querySelectorAll(".coach-highlight")
     .forEach((e) => e.classList.remove("coach-highlight"));
   try {
-    localStorage.setItem("bedroomPlannerV201Tour", "done");
+    localStorage.setItem("bedroomPlannerV202Tour", "done");
   } catch (e) {}
 }
 document.getElementById("coachNext").onclick = () =>
@@ -2963,19 +3050,24 @@ setTimeout(() => {
   commitHistory();
   let done = false;
   try {
-    done = localStorage.getItem("bedroomPlannerV201Tour") === "done";
+    done = localStorage.getItem("bedroomPlannerV202Tour") === "done";
   } catch (e) {}
   if (!done) setTimeout(() => showCoach(0), 380);
 }, 350);
 
 
 window.BedroomPlannerDiagnostics = {
-  version: "2.01",
+  version: "2.02",
   renderer,
   scene,
   camera,
   get drawCalls() { return renderer.info.render.calls; },
   get triangles() { return renderer.info.render.triangles; },
   get pixelRatio() { return renderer.getPixelRatio(); },
+  get scheduledRenderFrames() { return scheduledRenderFrames; },
+  get completedRenderFrames() { return completedRenderFrames; },
+  get renderPending() { return renderQueued || renderInProgress; },
+  get cutawaySide() { return lastCutawaySide; },
+  get hiddenWalls() { return [...hiddenWallsForCamera()].sort(); },
   renderOnce() { requestRender(false, 1); },
 };

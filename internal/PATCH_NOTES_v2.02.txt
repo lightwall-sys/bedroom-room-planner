@@ -1,0 +1,93 @@
+BEDROOM ROOM PLANNER v2.02 — INTERNAL PATCH NOTES
+==================================================
+
+SOURCE LINEAGE
+--------------
+Direct successor to Bedroom Room Planner v2.01.
+The v2.01 GitHub Pages startup repair, startup-error screen, public README and service-worker recovery behaviour are retained.
+
+1. CAMERA-ORBIT PERFORMANCE
+---------------------------
+Root cause:
+- The render callback cleared renderQueued before calling OrbitControls.update().
+- OrbitControls.update() could emit a change event while the callback was still executing.
+- The change handler then queued a new animation frame, after which renderFrame queued another frame itself.
+- During sustained orbiting and damping, multiple callbacks could therefore accumulate even though the scene is small.
+
+Fix:
+- Added one render-scheduling authority through scheduleRenderFrame().
+- Added renderInProgress so a change event emitted from inside controls.update() cannot create a competing callback.
+- Kept the queue flag active for the full callback lifecycle.
+- Reworked settle-frame accounting so requested frames are consumed deterministically.
+- Preserved OrbitControls damping and the existing responsive placement path.
+
+Relevant functions:
+- scheduleRenderFrame()
+- requestRender()
+- renderFrame()
+- controls change/start/end listeners
+
+2. AUTOMATIC CUTAWAY WALLS
+--------------------------
+Root cause:
+- hiddenWallsForCamera() treated camera.position.y > room height + 135 cm as an instruction to hide walls 1–6.
+- Orbiting upward could cross that threshold during an ordinary Design view, making the complete room shell disappear.
+
+Fix:
+- Removed camera height as a cutaway criterion.
+- The cutaway now follows the dominant horizontal camera-to-target direction.
+- Added axis hysteresis and a small sign dead zone to prevent rapid wall switching near diagonal views.
+- Cutaway mode hides only the wall section between the camera and its target.
+- Plan view and explicit Walls down still hide all walls; Walls up still shows all walls.
+- Shadow maps are marked dirty once when the selected cutaway section changes.
+
+Relevant functions/data:
+- cutawaySections
+- directionalCutawaySide()
+- hiddenWallsForCamera()
+- updateCutaway()
+
+3. PLACEABLE-OBJECT ROTATION
+----------------------------
+- Added visible Rotate left and Rotate right buttons to the placement banner for floor furniture.
+- Added a visible Switch orientation button for wall-mounted objects.
+- The same contextual controls appear after selecting an existing item in Move objects mode.
+- The current selected-object angle is shown in the banner.
+- Retained Q, E and R as optional shortcuts.
+- Updated the furniture workflow and Help wording so rotation is discoverable without opening a settings panel.
+
+Relevant functions/styles:
+- renderModeBanner()
+- refreshMoveBanner()
+- ghostMessage()
+- rotatePending()
+- rotateSelectedItem()
+- .mode-banner.has-actions
+- .mode-banner-actions
+
+4. HORIZONTAL WALL STRIPING
+---------------------------
+Diagnosis:
+- Walls do not use an image texture.
+- The dense horizontal/curved pattern was consistent with shadow-map self-shadowing on large double-sided wall surfaces, amplified by negative shadow bias.
+
+Fix:
+- Kept walls deliberately untextured and fully rough.
+- Enabled material dithering for smoother large-area colour gradients.
+- Restricted wall shadow-map writing to a controlled front side while keeping both faces visible for cutaway viewing.
+- Replaced negative daylight and overhead shadow bias values with positive bias.
+- Added normalBias to both shadow-casting lights to prevent self-shadow acne.
+
+Relevant settings:
+- wall MeshStandardMaterial dithering and shadowSide
+- daylight.shadow.bias / normalBias
+- overheadLight.shadow.bias / normalBias
+
+5. RELEASE AND CACHE VERSIONING
+-------------------------------
+- Updated visible and diagnostic version markers to v2.02.
+- Updated all CSS, JavaScript, manifest and icon query strings to ?v=2.02.
+- Updated service-worker registration to service-worker.js?v=2.02.
+- Updated cache name to bedroom-room-planner-v2-02.
+- Activation continues to delete all older bedroom-room-planner-* caches, including v2.00 and v2.01.
+- Updated the PWA start URL and tour storage key for v2.02.

@@ -1,0 +1,77 @@
+BEDROOM ROOM PLANNER v2.02 — MANUAL GITHUB UPLOAD
+==================================================
+
+EXACT COMMIT TITLE
+------------------
+Release Bedroom Room Planner v2.02
+
+EXACT EXTENDED DESCRIPTION
+--------------------------
+Fix camera performance, cutaway walls and object rotation controls.
+Remove wall shadow banding and refresh the v2.02 offline cache.
+
+RECOMMENDED BROWSER-ONLY FULL REPLACEMENT
+-----------------------------------------
+This method replaces the repository in one commit without connecting any external developer or service to the GitHub account.
+
+1. Download and extract Bedroom_Room_Planner_v2.02.zip.
+2. Open the existing bedroom-room-planner repository on GitHub while signed in.
+3. Press the full-stop key (.) to open the repository in GitHub's browser editor at github.dev.
+4. In the Explorer panel, delete the existing project files and folders from the repository workspace.
+5. Drag the CONTENTS of the extracted Bedroom_Room_Planner_v2.02 folder into the Explorer panel at the repository root.
+6. Confirm that index.html, README.md, manifest.webmanifest and service-worker.js are at the top level. Do not upload the outer Bedroom_Room_Planner_v2.02 folder as a nested directory.
+7. Confirm that the old v2.01 internal notes and upload-instruction file are absent.
+8. Open the Source Control panel and stage every addition, modification and deletion.
+9. In the first commit field, enter this title exactly:
+
+   Release Bedroom Room Planner v2.02
+
+10. In the larger description field, enter these two lines exactly:
+
+    Fix camera performance, cutaway walls and object rotation controls.
+    Remove wall shadow banding and refresh the v2.02 offline cache.
+
+11. Choose Commit directly to the main branch.
+12. Press Commit changes, then use Sync Changes or Push so the commit reaches GitHub.
+
+STANDARD GITHUB UPLOAD ALTERNATIVE
+----------------------------------
+GitHub's normal Add file > Upload files screen cannot reliably delete obsolete repository files. Use it only if you will manually remove the old files afterwards.
+
+1. Open the repository and choose Add file > Upload files.
+2. Upload the CONTENTS of Bedroom_Room_Planner_v2.02 to the repository root and allow matching files to be replaced.
+3. Use the exact commit title and extended description shown above.
+4. Delete obsolete v2.01 release files if they remain, including:
+   - GITHUB_UPLOAD_INSTRUCTIONS_v2.01.txt
+   - internal/PATCH_NOTES_v2.01.txt
+   - internal/HANDOVER_NOTES_v2.01.txt
+5. Do not delete .nojekyll.
+
+CHECK GITHUB PAGES
+------------------
+1. Open Settings > Pages in the repository.
+2. Under Build and deployment, use Deploy from a branch.
+3. Select the main branch and /(root), then save if those settings are not already active.
+4. Wait for the Pages deployment to complete successfully.
+5. Open the published Pages address and reload once.
+6. Confirm the header and Help > App status both show v2.02.
+7. Confirm the room appears and the loading screen closes.
+8. Orbit the camera continuously and confirm it remains smooth.
+9. Orbit above the room and confirm the entire wall shell no longer disappears.
+10. Add furniture and confirm visible rotation controls appear in the placement banner.
+11. Check evening lighting and confirm the dense horizontal wall striping is gone.
+
+CACHE RECOVERY
+--------------
+The v2.02 service worker uses the cache bedroom-room-planner-v2-02 and deletes older bedroom-room-planner-* caches during activation.
+
+If the browser still displays v2.01 after deployment:
+1. Close every open planner tab.
+2. Reopen the published Pages address.
+3. Perform one hard refresh.
+4. If needed, open browser site settings for the Pages address, clear stored site data and reload.
+5. The startup-error screen and Reload with fresh files control remain available if a required asset fails.
+
+NO ACCOUNT CONNECTION
+---------------------
+This replacement package does not connect to GitHub. It must be uploaded manually by a repository owner or collaborator.

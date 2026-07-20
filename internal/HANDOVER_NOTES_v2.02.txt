@@ -1,0 +1,99 @@
+BEDROOM ROOM PLANNER v2.02 — INTERNAL HANDOVER NOTES
+=====================================================
+
+RELEASE STATUS
+--------------
+- Complete static replacement repository.
+- Intended deployment: GitHub Pages from main / (root).
+- No build step, package installation or server-side component is required.
+- index.html, manifest.webmanifest and service-worker.js must remain at repository root.
+
+VERSION MARKERS
+---------------
+- Public/runtime version: 2.02
+- Service-worker cache: bedroom-room-planner-v2-02
+- Asset query string: ?v=2.02
+- Service-worker registration: ./service-worker.js?v=2.02
+- Diagnostics object: window.BedroomPlannerDiagnostics.version === "2.02"
+- Tour key: bedroomPlannerV202Tour
+
+IMPORTANT RENDER-LIFECYCLE RULE
+-------------------------------
+There must remain only one authority that calls requestAnimationFrame(renderFrame): scheduleRenderFrame().
+
+Do not:
+- set renderQueued to false and then allow controls.update() to schedule independently
+- add a second continuous animation loop for OrbitControls
+- call requestAnimationFrame(renderFrame) directly from the change handler
+
+The change handler may request a render. renderInProgress prevents that request from creating a competing callback while the current callback is executing.
+
+CUTAWAY MAINTENANCE RULE
+------------------------
+Do not reintroduce a camera-height rule that hides every wall. Elevated Design views must still retain a directional cutaway.
+
+Explicit behaviour:
+- cutaway: hide one directional wall section
+- up: hide none
+- down: hide all
+- plan view: hide all
+
+The right-hand stepped boundary is represented by sections 2, 3 and 4 and must continue to switch as one group (w234).
+
+WALL MATERIAL AND SHADOW RULE
+-----------------------------
+The walls are intentionally plain and do not use a generated or image texture. The v2.02 anti-banding treatment depends on:
+- wall material dithering
+- wall material shadowSide control
+- positive spotlight shadow bias
+- spotlight normalBias
+
+If lighting is redesigned, check large wall surfaces at shallow camera angles and at sunset/evening times before reducing those offsets.
+
+ROTATION USER EXPERIENCE
+------------------------
+Rotation must remain visible without requiring keyboard knowledge or opening Add furniture after every selection.
+
+Contextual banner behaviour:
+- pending floor item: two rotation buttons
+- pending wall item: Switch orientation
+- selected floor item in Move objects mode: two rotation buttons and current angle
+- selected wall item in Move objects mode: Switch orientation
+- no selection: guidance only
+
+Q, E and R are secondary shortcuts, not the primary discoverability mechanism.
+
+RESPONSIVE BEHAVIOUR
+--------------------
+- At wider widths, the contextual banner remains a single compact row when space permits.
+- Below 680 px, banner copy and action buttons wrap into two rows.
+- Existing drawer, taskbar and mobile layout breakpoints are unchanged.
+
+VALIDATION PERFORMED
+--------------------
+- JavaScript syntax checks passed for app.js, pwa.js and service-worker.js.
+- manifest.webmanifest parsed successfully as JSON.
+- Static version audit found no remaining v2.01 runtime references; v2.01 appears only in release-history and obsolete-file cleanup instructions.
+- Asset-reference audit confirmed every local index/service-worker asset exists.
+- Scheduler unit simulation confirmed no more than one render callback remains queued while OrbitControls emits nested change requests.
+- Cutaway unit checks confirmed elevated Design views hide one directional section rather than all six walls.
+- Plan, Walls down and Walls up logic were checked independently.
+- Rotation-control source checks confirmed visible contextual actions for pending and selected floor/wall items.
+- ZIP integrity and SHA-256 were checked after packaging.
+
+ENVIRONMENT LIMITATION
+----------------------
+The available automated Chromium runtime did not expose a usable WebGL context, so final visual GPU QA must be performed in a normal WebGL-enabled browser after deployment. This limitation concerns the validation environment only; it is not included in the public README.
+
+MANUAL POST-DEPLOYMENT QA
+-------------------------
+1. Hard-refresh the published Pages URL and confirm v2.02 appears in the header and Help panel.
+2. Orbit continuously for at least 20 seconds and confirm frame pacing remains stable.
+3. Orbit above the previous height threshold and confirm only one directional wall section is hidden.
+4. Rotate through diagonal views and confirm cutaway walls do not flicker rapidly.
+5. Test Walls up, Cutaway walls, Walls down and Plan view.
+6. Add each floor item and use the visible banner buttons before placement.
+7. Select an existing floor item in Move objects mode and rotate it from the banner.
+8. Add/select a wall item and use Switch orientation.
+9. Inspect all walls at 06:30, 14:00 and 19:30 for horizontal shadow striping.
+10. Reopen the page and confirm the v2.02 service worker has replaced older caches.

@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#3b3532">
   <meta name="description" content="Interactive bedroom planning tool with measured room geometry, furniture placement and lighting controls.">
-  <title>Bedroom Room Planner v2.01</title>
+  <title>Bedroom Room Planner v2.02</title>
   <script>
     (() => {
-      const VERSION = "2.01";
+      const VERSION = "2.02";
       const STARTUP_TIMEOUT_MS = 15000;
       let ready = false;
       let timeoutId = null;
@@ -38,7 +38,7 @@
         details.textContent = pendingFailure.details;
         retry.onclick = () => {
           const next = new URL(location.href);
-          next.searchParams.set("reload", `v201-${Date.now()}`);
+          next.searchParams.set("reload", `v202-${Date.now()}`);
           location.replace(next.href);
         };
       }
@@ -87,15 +87,15 @@ ${event.filename}:${event.lineno || 0}:${event.colno || 0}` : ""}`);
       }, { once: true });
     })();
   </script>
-  <link rel="manifest" href="./manifest.webmanifest?v=2.01">
-  <link rel="icon" type="image/png" sizes="192x192" href="./assets/icons/icon-192.png?v=2.01">
-  <link rel="apple-touch-icon" href="./assets/icons/icon-192.png?v=2.01">
-  <link rel="stylesheet" href="./assets/css/app.css?v=2.01">
-  <script defer src="./assets/js/vendor/three.min.js?v=2.01"></script>
-  <script defer src="./assets/js/vendor/OrbitControls.js?v=2.01"></script>
-  <script defer src="./assets/js/model-data.js?v=2.01"></script>
-  <script defer src="./assets/js/app.js?v=2.01"></script>
-  <script defer src="./assets/js/pwa.js?v=2.01"></script>
+  <link rel="manifest" href="./manifest.webmanifest?v=2.02">
+  <link rel="icon" type="image/png" sizes="192x192" href="./assets/icons/icon-192.png?v=2.02">
+  <link rel="apple-touch-icon" href="./assets/icons/icon-192.png?v=2.02">
+  <link rel="stylesheet" href="./assets/css/app.css?v=2.02">
+  <script defer src="./assets/js/vendor/three.min.js?v=2.02"></script>
+  <script defer src="./assets/js/vendor/OrbitControls.js?v=2.02"></script>
+  <script defer src="./assets/js/model-data.js?v=2.02"></script>
+  <script defer src="./assets/js/app.js?v=2.02"></script>
+  <script defer src="./assets/js/pwa.js?v=2.02"></script>
 </head>
 <body>
 
@@ -106,7 +106,7 @@ ${event.filename}:${event.lineno || 0}:${event.colno || 0}` : ""}`);
     <p>Starting Bedroom Room Planner…</p>
   </div>
   <section class="startup-error" id="startupError" hidden aria-labelledby="startupErrorTitle">
-    <p class="startup-error-kicker">Bedroom Room Planner v2.01</p>
+    <p class="startup-error-kicker">Bedroom Room Planner v2.02</p>
     <h2 id="startupErrorTitle">The planner could not start</h2>
     <p id="startupErrorMessage">A required file or browser feature was unavailable.</p>
     <button class="startup-retry" id="startupRetry" type="button">Reload with fresh files</button>
@@ -117,7 +117,7 @@ ${event.filename}:${event.lineno || 0}:${event.colno || 0}` : ""}`);
   </section>
 </div>
 <header class="app-header">
-  <section class="brand glass"><div class="eyebrow">Dimension-driven room study · v2.01</div><h1>Bedroom room planner</h1><p>Drag empty space to look around. Furniture stays locked until you deliberately choose <b>Move objects</b>.</p></section>
+  <section class="brand glass"><div class="eyebrow">Dimension-driven room study · v2.02</div><h1>Bedroom room planner</h1><p>Drag empty space to look around. Furniture stays locked until you deliberately choose <b>Move objects</b>.</p></section>
   <nav class="taskbar glass" aria-label="Planner tools">
     <div class="tool-group"><span class="tool-label">View</span><div class="view-switch"><button class="btn active" data-view="design">Design</button><button class="btn" data-view="doorway">Doorway</button><button class="btn" data-view="plan">Plan</button></div></div>
     <div class="tool-divider"></div>
@@ -129,7 +129,7 @@ ${event.filename}:${event.lineno || 0}:${event.colno || 0}` : ""}`);
     <button class="btn icon-only" id="hotkeysToggle" aria-expanded="false" title="Help and shortcuts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.5 2.5 0 1 1 4.3 1.7c-1.2 1-2 1.4-2 3.3M12 17h.01"/></svg></button>
   </nav>
 </header>
-<div class="mode-banner" id="modeBanner"><i></i><span><b>Move objects is on.</b> Click furniture to select it, then drag. Press Esc or P when finished.</span></div>
+<div class="mode-banner" id="modeBanner" aria-live="polite"><i></i><span class="mode-banner-copy"><b>Move objects is on.</b> Click furniture to select it, then drag. Press Esc or P when finished.</span></div>
 <section class="info glass" aria-label="Room summary">
   <div class="summary-grid">
     <button class="summary-card" id="paintSummaryButton" title="Change accent paint and wall"><i class="swatch" id="paintSwatch" style="background:#c3b3b8"></i><div><strong id="paintName">Dulux Dusted Fondant</strong><span id="paintLabel">Wall 1 · click to change</span></div><i class="chevron">›</i></button>
@@ -159,7 +159,7 @@ ${event.filename}:${event.lineno || 0}:${event.colno || 0}` : ""}`);
 
 <aside class="library glass" id="libraryDrawer" aria-hidden="true">
   <div class="drawer-head"><div><h2>Add furniture</h2><p>Choose a dimensionally sourced planning proxy, then place it deliberately.</p></div><button class="close" id="libraryClose" aria-label="Close furniture library">×</button></div>
-  <div class="workflow-card library-intro"><b>How placement works</b><div class="workflow-steps"><div class="workflow-step"><i>1</i>Choose an item</div><div class="workflow-step"><i>2</i>Position its green ghost</div><div class="workflow-step"><i>3</i>Click to place, then fine-tune</div></div><div class="ghost-explainer"><b>Green means valid.</b> The preview uses the selected item's real planning geometry. It turns red when it would overlap something or leave the usable room.</div></div>
+  <div class="workflow-card library-intro"><b>How placement works</b><div class="workflow-steps"><div class="workflow-step"><i>1</i>Choose an item</div><div class="workflow-step"><i>2</i>Position and rotate its green ghost</div><div class="workflow-step"><i>3</i>Click to place, then fine-tune</div></div><div class="ghost-explainer"><b>Green means valid.</b> Use the visible Rotate buttons before placing floor furniture. The preview turns red when it would overlap something or leave the usable room.</div></div>
   <section class="section"><h3 class="section-title">Floor furniture</h3><div class="catalogue-grid"><article class="item-card" data-category-card="bedside"><span class="category">Bedside furniture</span><strong>HEMNES bedside table</strong><span class="dims">46 × 35 × 70 cm</span><p>Solid-looking two-tier planning proxy.</p><button class="btn" data-add-item="hemnes">Add bedside table</button></article><article class="item-card" data-category-card="drawers"><span class="category">Chest of drawers</span><strong>MALM 6-drawer chest</strong><span class="dims">80 × 48 × 123 cm</span><p>Includes approximate drawer-front divisions.</p><button class="btn" data-add-item="malm">Add chest</button></article><article class="item-card" data-category-card="wardrobe"><span class="category">Wardrobe</span><strong>PAX wardrobe frame</strong><span class="dims">100 × 58 × 201 cm</span><p>Standard-depth wardrobe planning volume.</p><button class="btn" data-add-item="pax">Add wardrobe</button></article><article class="item-card" data-category-card="wardrobe"><span class="category">Mirrored wardrobe</span><strong>BRIMNES 3-door wardrobe</strong><span class="dims">117 × 50 × 190 cm</span><p>Three-door proxy with a mirrored centre panel.</p><button class="btn" data-add-item="brimnes">Add mirrored wardrobe</button></article></div></section>
   <section class="section"><h3 class="section-title">Wall-mounted</h3><div class="catalogue-grid"><article class="item-card"><span class="category">Mirror</span><strong>NISSEDAL mirror</strong><span class="dims">65 × 150 cm</span><p>Can be switched between portrait and landscape.</p><button class="btn" data-add-item="nissedal">Add mirror</button></article><article class="item-card"><span class="category">Wall art</span><strong>KNOPPÄNG frame</strong><span class="dims">52 × 72 × 2 cm</span><p>Wall-only placement prevents attachment to furniture.</p><button class="btn" data-add-item="knoppang">Add wall art</button></article></div></section>
   <section class="section"><h3 class="section-title">Selected object</h3><div class="placement-hint" id="placementHint"><b>Move objects is on.</b> Drag the selected floor item in the room, or use the exact controls below.</div><div class="selected-card" id="selectedItemCard"><h4>Nothing selected</h4><p>Add an item or turn on Move objects and click furniture. The bed has its own controls in Room settings.</p><div id="floorItemControls" class="hidden"><div class="fields"><div class="field"><label for="itemX">X cm</label><input id="itemX" type="number"></div><div class="field"><label for="itemZ">Z cm</label><input id="itemZ" type="number"></div><div class="field"><label for="itemRotation">Angle</label><input id="itemRotation" type="number"></div></div><div class="item-actions" style="margin-top:8px"><button class="btn" id="itemRotateLeft">↺ Rotate</button><button class="btn" id="itemRotateRight">Rotate ↻</button><button class="btn danger" id="itemDelete">Delete</button></div></div><div id="wallItemControls" class="hidden"><div class="fields"><div class="field"><label for="itemWall">Wall</label><select id="itemWall"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></div><div class="field"><label for="itemHeight">Height</label><input id="itemHeight" type="number"></div><div class="field"><label for="itemOffset">Along wall</label><input id="itemOffset" type="number"></div></div><div class="field" style="margin-top:8px"><label for="itemOrientation">Orientation</label><select id="itemOrientation"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select></div><button class="btn danger" id="itemDeleteWall" style="width:100%;margin-top:8px">Delete item</button></div></div></section>
@@ -167,9 +167,9 @@ ${event.filename}:${event.lineno || 0}:${event.colno || 0}` : ""}`);
 </aside>
 
 <aside class="hotkeys glass" id="hotkeysPanel" aria-hidden="true"><div class="drawer-head"><div><h2>Help & shortcuts</h2><p>Everything needed to use the planner, without guesswork.</p></div><button class="close" id="hotkeysClose" aria-label="Close help">×</button></div>
-  <section class="help-section app-status-card"><h3 class="section-title">App status</h3><div class="status-line good"><span>Version</span><b>v2.01</b></div><div class="status-line good"><span>Offline cache</span><b id="offlineStatus">Checking…</b></div><p class="subtle">When opened from GitHub Pages, the planner can be installed and cached for offline use.</p></section>
-  <section class="help-section"><h3 class="section-title">The basics</h3><div class="workflow-steps"><div class="workflow-step"><i>1</i>Drag empty space to orbit</div><div class="workflow-step"><i>2</i>Add furniture and position the green preview</div><div class="workflow-step"><i>3</i>Enable Move objects only for later edits</div></div><button class="btn" id="restartTour" style="width:100%;margin-top:9px">Show the guided tour</button></section>
-  <section class="help-section"><h3 class="section-title">Mouse</h3><div class="mouse-grid"><div class="mouse-card"><b>Left-drag empty space</b>Orbit the camera</div><div class="mouse-card"><b>Mouse wheel</b>Zoom in or out</div><div class="mouse-card"><b>Right-drag</b>Pan the view</div><div class="mouse-card"><b>Adding an item</b>Move the luminous ghost, then click to confirm</div><div class="mouse-card"><b>Move objects on</b>Left-drag placed furniture</div></div></section>
+  <section class="help-section app-status-card"><h3 class="section-title">App status</h3><div class="status-line good"><span>Version</span><b>v2.02</b></div><div class="status-line good"><span>Offline cache</span><b id="offlineStatus">Checking…</b></div><p class="subtle">When opened from GitHub Pages, the planner can be installed and cached for offline use.</p></section>
+  <section class="help-section"><h3 class="section-title">The basics</h3><div class="workflow-steps"><div class="workflow-step"><i>1</i>Drag empty space to orbit</div><div class="workflow-step"><i>2</i>Position and rotate the green preview</div><div class="workflow-step"><i>3</i>Enable Move objects only for later edits</div></div><button class="btn" id="restartTour" style="width:100%;margin-top:9px">Show the guided tour</button></section>
+  <section class="help-section"><h3 class="section-title">Mouse</h3><div class="mouse-grid"><div class="mouse-card"><b>Left-drag empty space</b>Orbit the camera</div><div class="mouse-card"><b>Mouse wheel</b>Zoom in or out</div><div class="mouse-card"><b>Right-drag</b>Pan the view</div><div class="mouse-card"><b>Adding an item</b>Move the luminous ghost, use the visible Rotate buttons, then click to confirm</div><div class="mouse-card"><b>Move objects on</b>Left-drag placed furniture</div></div></section>
   <section class="help-section"><h3 class="section-title">Keyboard</h3><div class="hotkey-grid"><div class="hotkey"><span>Move objects</span><span class="keys"><i class="key">P</i></span></div><div class="hotkey"><span>Cycle wall mode</span><span class="keys"><i class="key">V</i></span></div><div class="hotkey"><span>Nudge active object</span><span class="keys"><i class="key">↑</i><i class="key">↓</i><i class="key">←</i><i class="key">→</i></span></div><div class="hotkey"><span>Rotate active object or placement ghost</span><span class="keys"><i class="key">Q</i><i class="key">E</i><i class="key">R</i></span></div><div class="hotkey"><span>Confirm / cancel placement ghost</span><span class="keys"><i class="key">Enter</i><i class="key">Esc</i></span></div><div class="hotkey"><span>Bed wall presets</span><span class="keys"><i class="key">1</i><i class="key">2</i><i class="key">5</i></span></div><div class="hotkey"><span>Toggle snapping</span><span class="keys"><i class="key">G</i></span></div><div class="hotkey"><span>Narrow / widen FOV</span><span class="keys"><i class="key">[</i><i class="key">]</i></span></div><div class="hotkey"><span>Cycle time</span><span class="keys"><i class="key">T</i></span></div><div class="hotkey"><span>Undo / redo</span><span class="keys"><i class="key">Ctrl Z</i><i class="key">Ctrl Y</i></span></div><div class="hotkey"><span>Close a panel or mode</span><span class="keys"><i class="key">Esc</i></span></div></div></section>
 </aside>
 <div class="coachmark glass" id="coachmark" aria-live="polite"><div class="coachmark-top"><div class="coachmark-number" id="coachNumber">1</div><div><h3 id="coachTitle">Look around</h3><p id="coachCopy">Drag empty space in the room to orbit. Use the mouse wheel to zoom and right-drag to pan.</p></div></div><div class="coachmark-actions"><button class="btn" id="coachSkip">Skip tour</button><div><button class="btn" id="coachBack">Back</button><button class="btn active" id="coachNext">Next</button></div></div></div>
